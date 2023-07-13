@@ -1,0 +1,65 @@
+{
+    "students": [
+        {
+            "Alice": [
+                {
+                    "sub_topic": "Addition of two-digit numbers",
+                    "level": 3,
+                    "questions_answered": [
+                        3,
+                        9,
+                        1,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 5.0,
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 5.0,
+                            "avg_times": 30.0,
+                            "recent_times": [
+                                30
+                            ],
+                            "recent_scores": [
+                                5
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
