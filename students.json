@@ -4,59 +4,275 @@
             "Alice": [
                 {
                     "sub_topic": "Addition of two-digit numbers",
-                    "level": 3,
+                    "level": 5,
                     "questions_answered": [
                         3,
                         9,
-                        1,
-                        0,
+                        3,
+                        3,
                         0
                     ],
                     "proficiency_metrics": {
                         "overall_avg": {
-                            "avg_score": 5.0,
-                            "recent_scores": [
-                                5
-                            ]
+                            "avg_score": 0,
+                            "recent_scores": []
                         },
                         "communication": {
-                            "avg_score": 5.0,
+                            "avg_score": 0,
                             "related_mistakes": [],
-                            "recent_scores": [
-                                5
-                            ]
+                            "recent_scores": []
                         },
                         "interpretation": {
-                            "avg_score": 5.0,
+                            "avg_score": 0,
                             "related_mistakes": [],
-                            "recent_scores": [
-                                5
-                            ]
+                            "recent_scores": []
                         },
                         "computation": {
                             "avg_score": 5.0,
                             "related_mistakes": [],
-                            "recent_scores": [
-                                5
-                            ]
+                            "recent_scores": []
                         },
                         "conceptual": {
-                            "avg_score": 5.0,
+                            "avg_score": 0,
                             "related_mistakes": [],
-                            "recent_scores": [
-                                5
+                            "recent_scores": []
+                        },
+                        "time": {
+                            "avg_score": 0,
+                            "avg_times": null,
+                            "recent_times": [],
+                            "recent_scores": []
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "Caleb": [
+                {
+                    "sub_topic": "Multiplication of 2 digit numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": 4,
+                        "communication": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "needs to provide more examples"
+                            ]
+                        },
+                        "interpretation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "computation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "conceptual": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "forgot to add 1",
+                                "forgot to simplify"
                             ]
                         },
                         "time": {
-                            "avg_score": 5.0,
-                            "avg_times": 30.0,
-                            "recent_times": [
-                                30
-                            ],
-                            "recent_scores": [
-                                5
-                            ]
+                            "score": 2,
+                            "seconds": 300
                         }
+                    }
+                },
+                {
+                    "sub_topic": "adding 2 single digit numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": 4,
+                        "communication": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "needs to provide more examples"
+                            ]
+                        },
+                        "interpretation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "computation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "conceptual": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "forgot to add 1",
+                                "forgot to simplify"
+                            ]
+                        },
+                        "time": {
+                            "score": 2,
+                            "seconds": 300
+                        }
+                    }
+                },
+                {
+                    "sub_topic": "basic derivates",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": 4,
+                        "communication": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "needs to provide more examples"
+                            ]
+                        },
+                        "interpretation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "computation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "conceptual": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "forgot to add 1",
+                                "forgot to simplify"
+                            ]
+                        },
+                        "time": {
+                            "score": 2,
+                            "seconds": 300
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "Caleb Talley": [
+                {
+                    "sub_topic": "multiply 1 digit numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": 4,
+                        "communication": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "needs to provide more examples"
+                            ]
+                        },
+                        "interpretation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "computation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "conceptual": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "forgot to add 1",
+                                "forgot to simplify"
+                            ]
+                        },
+                        "time": {
+                            "score": 2,
+                            "seconds": 300
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "Cal": [
+                {
+                    "sub_topic": "addition",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": 4,
+                        "communication": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "needs to provide more examples"
+                            ]
+                        },
+                        "interpretation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "computation": {
+                            "score": 5,
+                            "related_mistakes": []
+                        },
+                        "conceptual": {
+                            "score": 4,
+                            "related_mistakes": [
+                                "forgot to add 1",
+                                "forgot to simplify"
+                            ]
+                        },
+                        "time": {
+                            "score": 2,
+                            "seconds": 300
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "JJ": [
+                {
+                    "sub_topic": "topology",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "proficiency_avg": 4.6,
+                        "communication_score": 4,
+                        "interpretation_score": 5,
+                        "computation_score": 5,
+                        "conceptual_score": 4,
+                        "time_score": 5
                     }
                 }
             ]
