@@ -19,7 +19,12 @@
 	- 1 + 1 is 2, 
 		- what do you even need to explain
 - Writing nothing gets you too high of a scroe
+- says you get the wrong answer, even if the answer is correct
+- the database update fails if the user visits the application multiple times
+- give the user the chance to ask multiple questions
+ 
 ## Future Changes
 - add a way for studnets to see what common mistakes they make on a topic before getting the questions
 - add the possibility of adding more questions to test
-- weighting the metrics differently# GPT_Toy_Tutor
+- weighting the metrics differently
+
