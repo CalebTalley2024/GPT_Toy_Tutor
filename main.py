@@ -1,13 +1,30 @@
+import uvicorn
+import sys
+
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
- 
+
 app = FastAPI()
 
-# Define our static folder, where will be our svelte build later
-app.mount("/assets", StaticFiles(directory="public/assets"), name="static")
+# static_directory = "frontend/public/assets"
+# index_page = "frontend/index.html"
 
-# Simply the root will return our Svelte build
+static_directory = "public/assets"
+index_page = "public/index.html"
+
+
+app.mount("/assets", StaticFiles(directory=static_directory), name="static")
+
 @app.get("/", response_class=FileResponse)
-async def main():
-    return "public/index.html"
+
+def main():
+    return index_page
+
+if __name__ == "__main__" and len(sys.argv) > 1:
+    match sys.argv[1]:
+        case 'dev' | "--dev" | "-d":
+            print("dev")
+            uvicorn.run("main:app", port=8002, reload=True)
+        case _:
+            uvicorn.run("main:app", port=8002)

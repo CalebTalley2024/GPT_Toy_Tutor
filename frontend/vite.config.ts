@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 
-// https://vitejs.dev/config/
+// // https://vitejs.dev/config/
 // export default defineConfig({
 //   plugins: [svelte()],
 // })
@@ -11,11 +11,12 @@ export default defineConfig({
   base: "./", // This will make paths relative
   build: {
      emptyOutDir: true,
-     outDir: '../public', // Where we want to put the build
+     // outDir will put our build outside of the 'frontend' folder (../)
+     outDir: '../public', // Where we want to put the build 
      assetsDir: 'assets', // This will be folder inside the public
      rollupOptions: {
         input: {
-           main: './index.html', // This index.html will be in public folder  ///// I added public to fix error
+           main: './index.html', // This index.html will be in public folder
            // if you have more pages, just add them bellow like this:
            // example: './pages/example.html',
         },

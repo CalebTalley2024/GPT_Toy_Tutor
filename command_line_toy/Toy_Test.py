@@ -16,8 +16,8 @@ import time
 
 
 # get syllabus
-df1 = pd.read_csv('topics.csv')
-df2 = pd.read_excel('GPT_tutor_topics(sub_topics_included).xlsx')
+# df1 = pd.read_csv('topics.csv')
+# df2 = pd.read_excel('GPT_tutor_topics(sub_topics_included).xlsx')
 # df2
 
 
@@ -27,6 +27,7 @@ df2 = pd.read_excel('GPT_tutor_topics(sub_topics_included).xlsx')
 # get key and model
 openai.api_key = "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"
 model_35 = "gpt-3.5-turbo"
+student_data_path = "../data/students.json"
 
 
 # In[90]:
@@ -52,7 +53,7 @@ def get_response_text(messages):
 # temporary helper functions
 def manual_level_reset(name, sub_topic, level):
     # Get data from students.json
-    with open('students.json') as f:
+    with open(student_data_path) as f:
         data = json.load(f)
 
     # Check if the student is in the database
@@ -72,7 +73,7 @@ def manual_level_reset(name, sub_topic, level):
 
     print("level changed, database stats reset")
     # Write the updated data back to students.json
-    with open('students.json', 'w') as f:
+    with open(student_data_path, 'w') as f:
         json.dump(data, f, indent=4)
 
 
@@ -81,7 +82,7 @@ def manual_level_reset(name, sub_topic, level):
 
 def get_student_subtopic_level(student, sub_topic):
     # Read the JSON file
-    file_path = 'students.json'
+    file_path = student_data_path
     with open(file_path, "r") as file:
         database = json.load(file)
 
@@ -476,7 +477,7 @@ def update_metrics(metrics, metric_updates):
 # updates the student metrics in the database
 def update_student_stats(name, sub_topic, metric_updates):
     # Get data from students.json
-    with open('students.json') as f:
+    with open(student_data_path) as f:
         data = json.load(f)
 
     # Check if the student is in the database
@@ -514,10 +515,25 @@ def update_student_stats(name, sub_topic, metric_updates):
         })
         print(f"{name}'s data metrics for '{sub_topic}'has been added ")
     # Write the updated data back to students.json
-    with open('students.json', 'w') as f:
+    with open(student_data_path, 'w') as f:
         json.dump(data, f, indent=4)
 
+# asks student question, evaluates and updates their database
+def student_learning(student, sub_topic):
+    """Asks the student a question and updates their stats."""
+    question = ask_question(student, sub_topic)
+    metric_updates = _receive_respond_and_update(question, student, sub_topic)
+    update_student_stats(student, sub_topic, metric_updates)
 
+    # Ask the student if they want to be asked another question.
+    answer = input("Do you want another question? 'Yes' or 'No' ")
+    while answer not in ("Yes", "No"):
+        answer = input("Please enter 'Yes' or 'No': ")
+
+    if answer == "Yes":
+        student_learning(student, sub_topic)
+    else:
+        print("Thank you for using the learning assistant! Have a great day.")
 # In[83]:
 
 
@@ -528,17 +544,12 @@ def update_student_stats(name, sub_topic, metric_updates):
 
 
 def main():
-    # Ask for student's name
-    student = input('Enter your name: ')
-    # Ask for sub-topic
-    sub_topic = input('Enter the sub-topic you want to learn: ')
-    # Ask question to student
-    question = ask_question(student, sub_topic)
-    # Receive student's answer, respond to their answer, and get metric updates
-    metric_updates = _receive_respond_and_update(question, student, sub_topic)
-    # Update student's stats in the database
-    update_student_stats(student, sub_topic, metric_updates)
+    """The main function that starts the learning process."""
+    student = input("Enter your name: ")
+    sub_topic = input("Enter the sub-topic you want to learn: ")
 
+    # Start the learning process.
+    student_learning(student, sub_topic)
 
 # In[109]:
 

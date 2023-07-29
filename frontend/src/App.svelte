@@ -1,6 +1,7 @@
 <script lang="ts">
   import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
+  // import viteLogo from '/vite.svg'
+  import viteLogo from '../public/assets/vite.svg' // get vite svg from frontend folder
   import Counter from './lib/Counter.svelte'
 </script>
 

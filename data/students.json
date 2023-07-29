@@ -44,6 +44,25 @@
                             "recent_scores": []
                         }
                     }
+                },
+                {
+                    "sub_topic": "Subtraction of two numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "proficiency_avg": 4.6,
+                        "communication_score": 4,
+                        "interpretation_score": 5,
+                        "computation_score": 5,
+                        "conceptual_score": 4,
+                        "time_score": 5
+                    }
                 }
             ]
         },
@@ -165,6 +184,89 @@
                             "seconds": 300
                         }
                     }
+                },
+                {
+                    "sub_topic": "Addition of imaginary numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "proficiency_metrics": {
+                            "proficiency_avg": 4.6,
+                            "communication": {
+                                "score": 4,
+                                "related_mistakes": [
+                                    "could have been more elaboration and clarity in his explanation."
+                                ]
+                            },
+                            "interpretation": {
+                                "score": 5,
+                                "related_mistakes": []
+                            },
+                            "computation": {
+                                "score": 5,
+                                "related_mistakes": []
+                            },
+                            "conceptual": {
+                                "score": 4,
+                                "related_mistakes": [
+                                    "explanation could have included more conceptual details to further enhance his understanding"
+                                ]
+                            },
+                            "time": {
+                                "score": 5,
+                                "seconds": 20
+                            }
+                        }
+                    }
+                },
+                {
+                    "sub_topic": "Addition with Imaginary numbers",
+                    "level": 5,
+                    "questions_answered": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 0,
+                            "recent_scores": []
+                        },
+                        "communication": {
+                            "avg_score": 0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "interpretation": {
+                            "avg_score": 0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "computation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "conceptual": {
+                            "avg_score": 0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "time": {
+                            "avg_score": 0,
+                            "avg_times": null,
+                            "recent_times": [],
+                            "recent_scores": []
+                        }
+                    }
                 }
             ]
         },
@@ -251,6 +353,24 @@
                             "seconds": 300
                         }
                     }
+                },
+                {
+                    "sub_topic": "adding derivates",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "communication_score": 4,
+                        "interpretation_score": 5,
+                        "computation_score": 5,
+                        "conceptual_score": 4,
+                        "time_score": 5
+                    }
                 }
             ]
         },
@@ -268,6 +388,72 @@
                     ],
                     "proficiency_metrics": {
                         "proficiency_avg": 4.6,
+                        "communication_score": 4,
+                        "interpretation_score": 5,
+                        "computation_score": 5,
+                        "conceptual_score": 4,
+                        "time_score": 5
+                    }
+                }
+            ]
+        },
+        {
+            "Kal": [
+                {
+                    "sub_topic": "Addition of 2 numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "proficiency_metrics": {
+                            "proficiency_avg": 4.6,
+                            "communication": {
+                                "score": 4,
+                                "related_mistakes": [
+                                    "could have been more elaboration and clarity in his explanation."
+                                ]
+                            },
+                            "interpretation": {
+                                "score": 5,
+                                "related_mistakes": []
+                            },
+                            "computation": {
+                                "score": 5,
+                                "related_mistakes": []
+                            },
+                            "conceptual": {
+                                "score": 4,
+                                "related_mistakes": [
+                                    "explanation could have included more conceptual details to further enhance his understanding"
+                                ]
+                            },
+                            "time": {
+                                "score": 5,
+                                "seconds": 20
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "John": [
+                {
+                    "sub_topic": "addition of variables",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
                         "communication_score": 4,
                         "interpretation_score": 5,
                         "computation_score": 5,
