@@ -1,10 +1,35 @@
 [
   {
-    "Question": "Placeholder?",
+    "Question": "What is 2 + 2?",
     "Feedback": []
   },
   {
-
+    "Question": "Solve for x: 3x + 5 = 20",
+    "Feedback": []
+  },
+  {
+    "Question": "Calculate the area of a rectangle with length 5 and width 8.",
+    "Feedback": []
+  },
+  {
+    "Question": "Find the value of 'a' in the equation 2a + 7 = 15.",
+    "Feedback": []
+  },
+  {
+    "Question": "Evaluate: (3 * 4) + (6 / 2).",
+    "Feedback": []
+  },
+  {
+    "Question": "Simplify the expression: 2x + 3x - 5x.",
+    "Feedback": []
+  },
+  {
+    "Question": "What is the square root of 81?",
+    "Feedback": []
+  },
+  {
+    "Question": "Solve for 'y': 2y - 10 = 30.",
+    "Feedback": []
   }
 ]
 
