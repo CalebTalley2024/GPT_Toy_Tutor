@@ -27,4 +27,16 @@
         "Question": "Solve for 'y': 2y - 10 = 30.",
         "Feedback": []
     },
+    {
+        "Question": "Level 3 (Difficulty: Moderate):\n\nRound the following decimal number to the nearest whole number:\n\n0.87\n\nExplain how you got your answer.",
+        "Feedback": [
+            "too long of an explanation"
+        ]
+    },
+    {
+        "Question": "Level 3 (Difficulty: Moderate):\n\nFind the area of a rectangle with a length of 8 units and a width of 5 units. \n\nExplain how you got your answer.",
+        "Feedback": [
+            "too long"
+        ]
+    }
 ]
