@@ -1,3 +1,5 @@
 fastapi
 uvicorn
 sklearn
+"codeinterpreterapi[all]"
+asyncio
