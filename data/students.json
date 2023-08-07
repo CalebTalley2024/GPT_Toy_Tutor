@@ -46,22 +46,50 @@
                     }
                 },
                 {
-                    "sub_topic": "Subtraction of two numbers",
-                    "level": 1,
+                    "sub_topic": "Two digit division",
+                    "level": 3,
                     "questions_answered": [
-                        1,
+                        0,
                         0,
                         0,
                         0,
                         0
                     ],
                     "proficiency_metrics": {
-                        "proficiency_avg": 4.6,
-                        "communication_score": 4,
-                        "interpretation_score": 5,
-                        "computation_score": 5,
-                        "conceptual_score": 4,
-                        "time_score": 5
+                        "overall_avg": {
+                            "avg_score": 0,
+                            "recent_scores": []
+                        },
+                        "communication": {
+                            "avg_score": 0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "interpretation": {
+                            "avg_score": 0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "computation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "conceptual": {
+                            "avg_score": 0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "time": {
+                            "avg_score": 1,
+                            "avg_times": 1,
+                            "recent_times": [
+                                1
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        }
                     }
                 }
             ]
@@ -69,167 +97,128 @@
         {
             "Caleb": [
                 {
-                    "sub_topic": "Multiplication of 2 digit numbers",
-                    "level": 1,
-                    "questions_answered": [
-                        1,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "proficiency_metrics": {
-                        "overall_avg": 4,
-                        "communication": {
-                            "score": 4,
-                            "related_mistakes": [
-                                "needs to provide more examples"
-                            ]
-                        },
-                        "interpretation": {
-                            "score": 5,
-                            "related_mistakes": []
-                        },
-                        "computation": {
-                            "score": 5,
-                            "related_mistakes": []
-                        },
-                        "conceptual": {
-                            "score": 4,
-                            "related_mistakes": [
-                                "forgot to add 1",
-                                "forgot to simplify"
-                            ]
-                        },
-                        "time": {
-                            "score": 2,
-                            "seconds": 300
-                        }
-                    }
-                },
-                {
-                    "sub_topic": "adding 2 single digit numbers",
-                    "level": 1,
-                    "questions_answered": [
-                        1,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "proficiency_metrics": {
-                        "overall_avg": 4,
-                        "communication": {
-                            "score": 4,
-                            "related_mistakes": [
-                                "needs to provide more examples"
-                            ]
-                        },
-                        "interpretation": {
-                            "score": 5,
-                            "related_mistakes": []
-                        },
-                        "computation": {
-                            "score": 5,
-                            "related_mistakes": []
-                        },
-                        "conceptual": {
-                            "score": 4,
-                            "related_mistakes": [
-                                "forgot to add 1",
-                                "forgot to simplify"
-                            ]
-                        },
-                        "time": {
-                            "score": 2,
-                            "seconds": 300
-                        }
-                    }
-                },
-                {
-                    "sub_topic": "basic derivates",
-                    "level": 1,
-                    "questions_answered": [
-                        1,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "proficiency_metrics": {
-                        "overall_avg": 4,
-                        "communication": {
-                            "score": 4,
-                            "related_mistakes": [
-                                "needs to provide more examples"
-                            ]
-                        },
-                        "interpretation": {
-                            "score": 5,
-                            "related_mistakes": []
-                        },
-                        "computation": {
-                            "score": 5,
-                            "related_mistakes": []
-                        },
-                        "conceptual": {
-                            "score": 4,
-                            "related_mistakes": [
-                                "forgot to add 1",
-                                "forgot to simplify"
-                            ]
-                        },
-                        "time": {
-                            "score": 2,
-                            "seconds": 300
-                        }
-                    }
-                },
-                {
-                    "sub_topic": "Addition of imaginary numbers",
-                    "level": 1,
-                    "questions_answered": [
-                        1,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "proficiency_metrics": {
-                        "proficiency_metrics": {
-                            "proficiency_avg": 4.6,
-                            "communication": {
-                                "score": 4,
-                                "related_mistakes": [
-                                    "could have been more elaboration and clarity in his explanation."
-                                ]
-                            },
-                            "interpretation": {
-                                "score": 5,
-                                "related_mistakes": []
-                            },
-                            "computation": {
-                                "score": 5,
-                                "related_mistakes": []
-                            },
-                            "conceptual": {
-                                "score": 4,
-                                "related_mistakes": [
-                                    "explanation could have included more conceptual details to further enhance his understanding"
-                                ]
-                            },
-                            "time": {
-                                "score": 5,
-                                "seconds": 20
-                            }
-                        }
-                    }
-                },
-                {
                     "sub_topic": "Addition with Imaginary numbers",
                     "level": 5,
                     "questions_answered": [
                         0,
+                        0,
+                        0,
+                        3,
+                        1
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 5.0,
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [
+                                "too long"
+                            ],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 3.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                3
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 4.0,
+                            "avg_times": 30.0,
+                            "recent_times": [
+                                30
+                            ],
+                            "recent_scores": [
+                                4
+                            ]
+                        }
+                    }
+                },
+                {
+                    "sub_topic": "Two digit division",
+                    "level": 5,
+                    "questions_answered": [
+                        4,
+                        3,
+                        6,
+                        7,
+                        11
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 5.0,
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [
+                                "too long"
+                            ],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 3.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                3
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 4.0,
+                            "avg_times": 30.0,
+                            "recent_times": [
+                                30
+                            ],
+                            "recent_scores": [
+                                4
+                            ]
+                        }
+                    }
+                },
+                {
+                    "sub_topic": "Addition with real numbers",
+                    "level": 2,
+                    "questions_answered": [
+                        3,
                         0,
                         0,
                         0,
@@ -267,95 +256,81 @@
                             "recent_scores": []
                         }
                     }
-                }
-            ]
-        },
-        {
-            "Caleb Talley": [
+                },
                 {
-                    "sub_topic": "multiply 1 digit numbers",
+                    "sub_topic": "random",
                     "level": 1,
                     "questions_answered": [
-                        1,
+                        2,
                         0,
                         0,
                         0,
                         0
                     ],
                     "proficiency_metrics": {
-                        "overall_avg": 4,
+                        "overall_avg": {
+                            "avg_score": 1.9,
+                            "recent_scores": [
+                                2,
+                                1.8
+                            ]
+                        },
                         "communication": {
-                            "score": 4,
+                            "avg_score": 2.5,
                             "related_mistakes": [
-                                "needs to provide more examples"
+                                "did not explain reasoning or steps clearly"
+                            ],
+                            "recent_scores": [
+                                2,
+                                3
                             ]
                         },
                         "interpretation": {
-                            "score": 5,
-                            "related_mistakes": []
+                            "avg_score": 1.5,
+                            "related_mistakes": [
+                                "misunderstood the question and did not realize regrouping was not allowed"
+                            ],
+                            "recent_scores": [
+                                1,
+                                2
+                            ]
                         },
                         "computation": {
-                            "score": 5,
-                            "related_mistakes": []
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "incorrect answer, lack of understanding of subtraction without regrouping"
+                            ],
+                            "recent_scores": [
+                                1,
+                                1
+                            ]
                         },
                         "conceptual": {
-                            "score": 4,
+                            "avg_score": 1.5,
                             "related_mistakes": [
-                                "forgot to add 1",
-                                "forgot to simplify"
+                                "did not grasp concept of borrowing or regrouping in subtraction"
+                            ],
+                            "recent_scores": [
+                                1,
+                                2
                             ]
                         },
                         "time": {
-                            "score": 2,
-                            "seconds": 300
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "Cal": [
-                {
-                    "sub_topic": "addition",
-                    "level": 1,
-                    "questions_answered": [
-                        1,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "proficiency_metrics": {
-                        "overall_avg": 4,
-                        "communication": {
-                            "score": 4,
-                            "related_mistakes": [
-                                "needs to provide more examples"
+                            "avg_score": 3.0,
+                            "avg_times": 12.0,
+                            "recent_times": [
+                                20,
+                                4.0057361125946045
+                            ],
+                            "recent_scores": [
+                                5,
+                                1
                             ]
-                        },
-                        "interpretation": {
-                            "score": 5,
-                            "related_mistakes": []
-                        },
-                        "computation": {
-                            "score": 5,
-                            "related_mistakes": []
-                        },
-                        "conceptual": {
-                            "score": 4,
-                            "related_mistakes": [
-                                "forgot to add 1",
-                                "forgot to simplify"
-                            ]
-                        },
-                        "time": {
-                            "score": 2,
-                            "seconds": 300
                         }
                     }
                 },
                 {
-                    "sub_topic": "adding derivates",
+                    "sub_topic": "Tree",
                     "level": 1,
                     "questions_answered": [
                         1,
@@ -365,86 +340,137 @@
                         0
                     ],
                     "proficiency_metrics": {
-                        "communication_score": 4,
-                        "interpretation_score": 5,
-                        "computation_score": 5,
-                        "conceptual_score": 4,
-                        "time_score": 5
-                    }
-                }
-            ]
-        },
-        {
-            "JJ": [
-                {
-                    "sub_topic": "topology",
-                    "level": 1,
-                    "questions_answered": [
-                        1,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "proficiency_metrics": {
-                        "proficiency_avg": 4.6,
-                        "communication_score": 4,
-                        "interpretation_score": 5,
-                        "computation_score": 5,
-                        "conceptual_score": 4,
-                        "time_score": 5
-                    }
-                }
-            ]
-        },
-        {
-            "Kal": [
-                {
-                    "sub_topic": "Addition of 2 numbers",
-                    "level": 1,
-                    "questions_answered": [
-                        1,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "proficiency_metrics": {
-                        "proficiency_metrics": {
-                            "proficiency_avg": 4.6,
-                            "communication": {
-                                "score": 4,
-                                "related_mistakes": [
-                                    "could have been more elaboration and clarity in his explanation."
-                                ]
-                            },
-                            "interpretation": {
-                                "score": 5,
-                                "related_mistakes": []
-                            },
-                            "computation": {
-                                "score": 5,
-                                "related_mistakes": []
-                            },
-                            "conceptual": {
-                                "score": 4,
-                                "related_mistakes": [
-                                    "explanation could have included more conceptual details to further enhance his understanding"
-                                ]
-                            },
-                            "time": {
-                                "score": 5,
-                                "seconds": 20
-                            }
+                        "overall_avg": {
+                            "avg_score": 2.0,
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 2.0,
+                            "related_mistakes": [
+                                "does not clearly explain the steps taken to subtract the numbers."
+                            ],
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "misinterpreted the question and did not understand that regrouping (borrowing) was not allowed",
+                                "The answer provided does not align with the given instructions."
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "does not follow the correct method of subtraction without regrouping."
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "lacks a clear understanding of the concept of subtraction without regrouping"
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 5.0,
+                            "avg_times": 20.0,
+                            "recent_times": [
+                                20
+                            ],
+                            "recent_scores": [
+                                5
+                            ]
                         }
                     }
                 }
             ]
         },
         {
-            "John": [
+            "Michael Jordan": [
                 {
-                    "sub_topic": "addition of variables",
+                    "sub_topic": "Addition with real numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        2,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 5.0,
+                            "recent_scores": [
+                                5,
+                                5
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [
+                                "too long"
+                            ],
+                            "recent_scores": [
+                                5,
+                                5
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5,
+                                5
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5,
+                                5
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 3.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                3,
+                                3
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 4.0,
+                            "avg_times": 30.0,
+                            "recent_times": [
+                                30,
+                                30
+                            ],
+                            "recent_scores": [
+                                4,
+                                4
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "Brady": [
+                {
+                    "sub_topic": "trees",
                     "level": 1,
                     "questions_answered": [
                         1,
@@ -454,11 +480,58 @@
                         0
                     ],
                     "proficiency_metrics": {
-                        "communication_score": 4,
-                        "interpretation_score": 5,
-                        "computation_score": 5,
-                        "conceptual_score": 4,
-                        "time_score": 5
+                        "overall_avg": {
+                            "avg_score": 2.8,
+                            "recent_scores": [
+                                2.8
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 3.0,
+                            "related_mistakes": [
+                                "explanation could have been more concise and organized."
+                            ],
+                            "recent_scores": [
+                                3
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 2.0,
+                            "related_mistakes": [
+                                "misunderstood the concept of branches in a tree."
+                            ],
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 3.0,
+                            "related_mistakes": [
+                                "did not correctly identify which lines should be counted as branches."
+                            ],
+                            "recent_scores": [
+                                3
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 2.0,
+                            "related_mistakes": [
+                                "lacked a clear understanding of what constitutes a branch in a tree."
+                            ],
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 4.0,
+                            "avg_times": 20.0,
+                            "recent_times": [
+                                20
+                            ],
+                            "recent_scores": [
+                                4
+                            ]
+                        }
                     }
                 }
             ]

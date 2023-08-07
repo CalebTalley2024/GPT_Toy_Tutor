@@ -5,6 +5,8 @@
 - Writing nothing gets you too high of a score
 #### Errors
 - the database update fails if the user visits the application multiple times
+- fix questions answered error
+- change order about where you are asked if you want to pick a level ( able to pick sub topic twice)
 ##### Examples of GPT reasoning errors
 - "example Given a triangle with side lengths of 5, 6, and 7 units. Explain how you got your answer."
   - name: Jake
@@ -86,6 +88,8 @@
 -  how to make GPT better at arithmetic
 	- Figure out way to deal with math when you need to return multiple variables
    - Self Refine process for the python 
+- fix grading shortcuts
+  - " the answer is "x" because that's how math works" gets too high of a score
 
 #### MemPrompt
 - What to use to retrieve information
@@ -94,6 +98,8 @@
 - adding threshold for question_similarity
 - order by subtopic instead of by question??
 - make question in JSON look better???
+- Trying to use Self Refinement to check code?
+  - if so, try different temperatures pertaining to code review
 ### Future Steps
 - Use azure cloud as database
 - Expand into a Test
