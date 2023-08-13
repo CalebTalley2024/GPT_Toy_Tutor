@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[300]:
+# In[404]:
 
 
 from collections import defaultdict
@@ -16,9 +16,7 @@ from sklearn.metrics.pairwise import cosine_similarity as cos
 import time
 
 
-# 
-
-# In[301]:
+# In[405]:
 
 
 # get syllabus
@@ -27,7 +25,7 @@ df2 = pd.read_csv('../data/GPT_tutor_topics(sub_topics_included).csv')
 # df2
 
 
-# In[302]:
+# In[406]:
 
 
 # get key and model
@@ -38,7 +36,7 @@ memory_path = "../data/memory.json"
 question_temp = 1 # temp has to be between 0 and 2
 
 
-# In[303]:
+# In[407]:
 
 
 # data helper functions
@@ -55,7 +53,7 @@ def post_ext_data(data, path):
         json.dump(data, f, indent=4)
 
 
-# In[304]:
+# In[408]:
 
 
 # helper functions
@@ -83,7 +81,7 @@ def get_response_text_w_temp(messages, temp):
     return res['choices'][0]['message']['content']
 
 
-# In[305]:
+# In[409]:
 
 
 # creates one part of the message that you send to the GPT API for a response.
@@ -108,7 +106,7 @@ def create_message_part(text, role_type):
     return message_part
 
 
-# In[306]:
+# In[410]:
 
 
 # temporary helper functions
@@ -125,7 +123,7 @@ def manual_level_reset(name, sub_topic, level):
             for section in sections:
                 if section['sub_topic'] == sub_topic:
                     # Reset the student's metrics
-                    section['proficiency_metrics'] = clear_metrics(section['proficiency_metrics'])
+                    section['proficiency_metrics'] = clear_metrics()
                     section['level'] =  level
                     section['questions_answered'] = [0, 0, 0, 0, 0]
                     print(f"{name}'s data metrics for '{sub_topic}' has been reset.")
@@ -135,7 +133,7 @@ def manual_level_reset(name, sub_topic, level):
     post_ext_data(data, student_data_path)
 
 
-# In[307]:
+# In[411]:
 
 
 def get_student_subtopic_level(student, sub_topic):
@@ -166,7 +164,7 @@ def get_student_subtopic_level(student, sub_topic):
         return default_level
     # Check if sub-topic exists for the student
     if sub_topic_data is None:
-        print(f"student has not data for '{sub_topic}' in this database. They will be start at Level 1.")
+        print(f"student has no data for '{sub_topic}' in this database. They will be start at Level 1.")
         return default_level
     else:
         # Retrieve the level and proficiency scores
@@ -176,7 +174,7 @@ def get_student_subtopic_level(student, sub_topic):
     return level
 
 
-# In[308]:
+# In[412]:
 
 
 # helper functions for ask_question
@@ -192,8 +190,6 @@ def filter_answers():
 def init_question(student, sub_topic, use_type):
 
     # Prompt for level choice
-    #TODO integrate manually picking level
-
     if use_type == "user":
         print("Hello User/Student! \npicking the level manually will only affect the type of questions you get")
         choice = input("Do you want to pick the level? (Y/N): ")
@@ -269,7 +265,7 @@ def question_formatting():
 
 # 
 
-# In[309]:
+# In[446]:
 
 
 # ask question to student
@@ -284,16 +280,18 @@ def ask_question(student, sub_topic,user_type):
     tutor_question = get_response_text_w_temp(messages,question_temp)
     # here we print out the question GPT gives the student
     print(f"{tutor_question}: \n\n")
+    # make sure the question is always in lower case
+    tutor_question = tutor_question.lower()
     return tutor_question
 
 
-# In[310]:
+# In[414]:
 
 
 # ask_question("Alice", "2 digit division","user") #test
 
 
-# In[358]:
+# In[415]:
 
 
 # time: time it took the student to answer the question given from GPT
@@ -309,7 +307,12 @@ def get_student_timed_response():
     end_time = end_time - start_time
 
     return student_res, end_time
-def grade_student_response(question, student_answer, student,solve_time, sub_topic):
+
+
+# In[416]:
+
+
+def respond_to_student_ans(question, student_answer, student,gpt_ans_explanation,get_all_student_related_mistakes):
     # take in the student's answer, and the topic
     print("Answer: \n")
     question_message = {
@@ -319,12 +322,22 @@ def grade_student_response(question, student_answer, student,solve_time, sub_top
     }
     answer_explained = {
         "role": "user",
-        "content": f"{student}'s answer is {student_answer}. Tell whether the student got the question correct and give and provide an explanation of the correct answer. Also explain where the student is incorrect"
+        "content": f"The GPT answer that you have found is derived below: \n{gpt_ans_explanation}\n\n{student}'s answer is {student_answer}. Tell whether the student got the question correct based on the GPT answer and give and provide an explanation of the correct answer. Also explain where the student is incorrect"
     }
-    init_response_messages = [question_message,answer_explained]
+
+    use_student_mistakes = {
+        "role": "user",
+        "content": f" These are the mistakes that {student} made while doing these types of problems: {get_all_student_related_mistakes}. in your answer. high light how he has improved on his mistakes,and/or how he is still doing the same mistake. If the studnet does not currently have any related mistakes, dont mention anything about related mistakes"
+    }
+    init_response_messages = [question_message,answer_explained,use_student_mistakes]
 
     answer_res = get_response_text(init_response_messages)
+
     print(f"{answer_res}\n\n")
+
+    return answer_res
+
+def grade_student_response(question, student_answer, student,solve_time, sub_topic,answer_res):
 
     print("Evaluation: \n")
     # if the question being asked is simple we want to make sure the user does not have to give an explanation if non is needed
@@ -358,6 +371,10 @@ def grade_student_response(question, student_answer, student,solve_time, sub_top
         {
             "role": "system",
             "content": "at the end, give an average score based on the above metrics"
+        },
+        {
+            "role": "system",
+            "content": "make sure that you always have a time metric"
         }
     ]
     evaluation_res = get_response_text(evaluation_messages)
@@ -367,6 +384,78 @@ def grade_student_response(question, student_answer, student,solve_time, sub_top
 
     # print(metrics_scores)
     return  metrics_scores
+
+
+
+# In[417]:
+
+
+# give students the ability to ask for clarification regarding a question they have about the answer to the question
+def get_gpt_clarification (question, gpt_answer, student_answer, previous_explanations):
+    # ask the student if they need clarification on a question.
+    # if they do. give them a chance to ask the question
+    # if they dont, then dont provide anything
+
+
+    # make sure the response safe and only related to mathematics
+    only_answer_math = f'''I am a math teacher for Grade K-12 in the United States. I am using the GPT API to help me answer my students' math questions. Please only answer my questions about math, and do not respond to any questions that are not about math.'''
+
+    only_answer_math_msg = create_message_part(only_answer_math,1)
+
+    previous_info = f"""
+    Question: {question},
+    GPT's answer ( assume this is correct): {gpt_answer},
+    student's answer (this could, or could not be correct){student_answer},
+    previous explanations to students questions:{previous_explanations}
+    """
+    # create system message
+    previous_info_msg = create_message_part(previous_info,1)
+
+
+    # create message for the student's question on the math problem
+    student_question = input("Write down what you want clarification on")
+    student_question_msg = create_message_part(student_question,3)
+
+    msgs = [only_answer_math_msg,previous_info_msg,student_question_msg]
+
+    GPT_res = get_response_text(msgs)
+
+    print("\n")
+    print(GPT_res)
+
+    return GPT_res
+
+# GPT gives a detailed explanation given a student's question on the math problem
+# ques_explain: math question and the previous student questions asked and the GPT resposes given
+def student_clarification(question, gpt_answer, student_answer, previous_explanations):
+    # Ask the student if they want clarification about the answers given
+    need_clarification = input("If you want clarification, type 'Yes'. Type anything else to got to the evaluation section\n")
+
+    if need_clarification == "Yes".lower():
+        # Get clarification from the student using the get_gpt_clarification function
+        new_clarification = get_gpt_clarification(question, gpt_answer, student_answer, previous_explanations)
+
+        # Update previous explanations with the new clarification
+        previous_explanations = previous_explanations + "  ,  " + new_clarification
+
+        # Recursive call to continue the clarification process
+        student_clarification(question, gpt_answer, student_answer, previous_explanations)
+    else:
+        print("Student questioning section has been completed.\nNext: Metric scores for performance\n")
+
+
+# In[418]:
+
+
+# question = "Solve for x: 2x + 5 = 15"
+# gpt_answer = "x = 5"
+# student_answer = "x = 6"
+# previous_explanations = ""
+# student_clarification(question, gpt_answer, student_answer, previous_explanations)
+
+
+# In[ ]:
+
 
 # gpt_res: evaluation on how the student answered the questions
 def extract_metrics_scores(gpt_res):
@@ -506,16 +595,76 @@ def extract_metrics_scores(gpt_res):
     # return metric_scores_string
 
 
-# In[314]:
+# In[445]:
 
 
-# receive student's' answer, respond to their answer, and update their statistics
-def _receive_respond_and_update(question, student, sub_topic):
+def get_specific_metric_mistakes(specific_metric,metrics_data):
+    related_mistakes = metrics_data[specific_metric]['related_mistakes']
+
+    return related_mistakes
+
+def get_all_metric_mistakes(metrics_data):
+    metric_types = ["communication","interpretation", "computation","conceptual"]
+
+    related_mistakes = []
+    for metric_type in metric_types:
+        # print(metric_type)
+        specific_mistakes = get_specific_metric_mistakes(metric_type, metrics_data)
+        related_mistakes.append(specific_mistakes)
+
+    related_mistakes_str = f"{related_mistakes}"
+    return related_mistakes_str
+
+def get_all_student_related_mistakes(student, sub_topic):
+    # Assuming you have the data dictionary defined
+    data = get_ext_data(student_data_path)
+    # Find the student in the data dictionary
+    student_data = None
+    for student_entry in data['students']:
+        if student in student_entry:
+            student_data = student_entry[student]
+            break
+
+    if student_data is None:
+        return "Student not found"
+
+    # Find the sub-topic in the student's data
+    sub_topic_data = None
+    for topic in student_data:
+        if topic['sub_topic'] == sub_topic:
+            sub_topic_data = topic
+            break
+
+    if sub_topic_data is None:
+        return "Sub-topic not found for this student"
+
+    metrics = sub_topic_data['proficiency_metrics']
+    # Retrieve the related mistakes from the sub-topic data
+    related_mistakes = get_all_metric_mistakes(metrics)
+    # return metrics
+    print(f"{student}'s previous mistakes with the sub_topic : {sub_topic}: {related_mistakes}\n")
+    return related_mistakes
+
+
+# In[420]:
+
+
+# receive student's answer, respond to their answer, and update their statistics
+def receive_respond_and_update(question, student, sub_topic,get_all_student_related_mistakes):
     # Get the student's response and the time taken
-    student_res, solve_time = get_student_timed_response()
+    student_answer, solve_time = get_student_timed_response()
 
     # Grade the student's response using the given question, student response, time, and sub_topic
-    gpt_res = grade_student_response(question, student_res, student, solve_time, sub_topic)
+
+    # get the answer + explanation that GPT provides with python doing the math.
+    # uses "memPrompt" like memory
+    gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
+
+    answer_res = respond_to_student_ans(question, student_answer, student, gpt_ans_explanation,get_all_student_related_mistakes)
+
+    previous_explanations = " " # we start the previous explanations empty
+    student_clarification(question,answer_res,student_answer,previous_explanations)
+    gpt_res = grade_student_response(question, student_answer, student, solve_time, sub_topic,answer_res)
 
     # Extract metric updates from the GPT response
     metric_updates = extract_metrics_scores(gpt_res)
@@ -524,13 +673,13 @@ def _receive_respond_and_update(question, student, sub_topic):
     return metric_updates
 
 
-# In[315]:
+# In[421]:
 
 
-# test_new_update = _receive_respond_and_update("What is 1 + 1", "Alice", "basic addition")
+# test_new_update = receive_respond_and_update("What is 1 + 1", "Alice", "basic addition")
 
 
-# In[336]:
+# In[422]:
 
 
 # checks to see if the student has done well enough at a subtopic to move up a level
@@ -680,7 +829,7 @@ def update_metrics(metrics, metric_updates):
     return metrics
 
 
-# In[317]:
+# In[423]:
 
 
 # updates the student metrics in the database
@@ -698,7 +847,7 @@ def update_student_stats(name, sub_topic, metric_updates):
                 if section["sub_topic"] == sub_topic:
                     # Update the student's metrics
                     section["proficiency_metrics"], section["level"],section["questions_answered"], = update_data(section,metric_updates)
-                    print(f"{name}'s data metrics for '{sub_topic}'has been updated ")
+                    print(f"{name}'s data metrics for '{sub_topic} 'has been updated ")
                     break
             else:
                 # update stats with cleared metric data
@@ -719,7 +868,7 @@ def update_student_stats(name, sub_topic, metric_updates):
     post_ext_data(data, student_data_path)
 
 
-# In[362]:
+# In[424]:
 
 
 #TODO Highlight what a students mistakes are in the answer GPT provides
@@ -729,7 +878,7 @@ def update_student_stats(name, sub_topic, metric_updates):
 #TODO change answer length based on grade and subtopic
 
 
-# In[323]:
+# In[425]:
 
 
 # asks student question, evaluates and updates their database
@@ -738,8 +887,9 @@ def student_learning():
     student = input("Enter your name: ")
     sub_topic = input("Enter the sub-topic you want to learn: ")
     user_type = "user"
-    question = ask_question(student, sub_topic, user_type )
-    metric_updates = _receive_respond_and_update(question, student, sub_topic)
+    question = ask_question(student, sub_topic, user_type)
+    old_student_mistakes = get_all_student_related_mistakes(student, sub_topic)
+    metric_updates = receive_respond_and_update(question, student, sub_topic, old_student_mistakes)
     update_student_stats(student, sub_topic, metric_updates)
 
     # Ask the student if they want to be asked another question.
@@ -753,14 +903,14 @@ def student_learning():
         print("Thank you for using GPT Tutor! Have a great day.")
 
 
-# In[324]:
+# In[426]:
 
 
 #TODO make a test portion
 #TODO Evaluating AI/Student's Answer to question
 
 
-# In[326]:
+# In[427]:
 
 
 # converts question's format into python formatting
@@ -805,7 +955,7 @@ def backtrack_to_explanation(question, answer):
     return explanation
 
 
-# In[327]:
+# In[428]:
 
 
 #### TRYING TO run python code to get question right
@@ -896,7 +1046,8 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 #TODO update memPropmt and studnet_learning to include Self_Refine
 
 
-# In[364]:
+
+# In[429]:
 
 
 q1 = "What is 0.96**5"
@@ -920,7 +1071,7 @@ Calculate the total cost of buying each cup.
 # 
 # 
 
-# In[330]:
+# In[430]:
 
 
 # gets only the "Question" keys of JSON
@@ -964,7 +1115,7 @@ def find_most_similar_question(query):
     return most_similar_question
 
 
-# In[338]:
+# In[431]:
 
 
 # given question, will find a similar question in the database, then give you feedback
@@ -1068,7 +1219,28 @@ def update_memory(question, answer, explanation):
         print("Memory will not be updated")
 
 
-# In[346]:
+# In[432]:
+
+
+# GPT answser the question with the feedback memory json
+def get_answer_explanation_with_memory(question):
+    similar_question =  find_most_similar_question(question)
+    # get the feedback associated with the question / similar question
+    feedback = get_feedback(similar_question)
+    # convert the list to a string
+    feedback_str = f"{feedback}"
+    # print(type(feedback_str))
+    print(f"found feedback from memory.json: {feedback_str}")
+    prompt = create_prompt(question,feedback_str)
+
+    # return question
+    # get the GPT generated answer and explanation
+    #ans_explanation: gives both the answer to the quesiton and the explanation of the answer
+    ans_explanation, answer = get_answer_and_explanation(prompt)
+    return ans_explanation,answer
+
+
+# In[433]:
 
 
 # based off "MemPrompt: Memory-assisted Prompt Editing with User Feedback" paper
@@ -1080,18 +1252,8 @@ def mem_prompt_learning():
     # get the question
     question = ask_question(student_placeholder,sub_topic,user_type)
     # find the question, or the most similar question that's in the database already
-    similar_question =  find_most_similar_question(question)
-    # get the feedback associated with the question / similar question
-    feedback = get_feedback(similar_question)
-    # convert the list to a string
-    feedback_str = f"{feedback}"
-    # print(type(feedback_str))
-    print(f"found feedback: {feedback_str}")
-    prompt = create_prompt(question,feedback_str)
-
-    # return question
     # get the GPT generated answer and explanation
-    explanation, answer =get_answer_and_explanation(prompt)
+    explanation, answer = get_answer_explanation_with_memory(question)
 
     # update the memory.json file ( if the answer is already correct, then nothing in the database will change)
 
@@ -1108,7 +1270,7 @@ def mem_prompt_learning():
         print("Thank you training GPT Tutor! Have a great day.")
 
 
-# In[334]:
+# In[434]:
 
 
 def main():
@@ -1125,7 +1287,7 @@ def main():
 
     valid = False # valid if you enter either 'user' or 'trainer'
     while not valid:
-        usage_type = input("Type 'user' if you use GPT to learn. \nType 'trainer' if you want to train GPT_Tutor.\n")
+        usage_type = input("Type 'user' if you use GPT to learn. \nType 'trainer' if you want to train GPT_Tutor.\nType 'exit' to exit the program\n")
 
         usage_type = usage_type.lower() # makes sure letters are in lowercase
 
@@ -1138,9 +1300,11 @@ def main():
             valid = True
             # Start GPT learning process
             mem_prompt_learning()
+        if usage_type == "exit":
+            valid = True
 
 
-# In[348]:
+# In[435]:
 
 
 # Check if the script is being run directly
@@ -1148,8 +1312,66 @@ if __name__ == "__main__":
     main()
 
 
-# In[361]:
+# In[436]:
 
 
 # grade_student_response("What is 99 * 99", "99 * 99 = 9801","Alice",20, "basic arithmetic")
+
+
+# In[437]:
+
+
+# student_learning()
+
+
+# In[437]:
+
+
+
+
+
+# In[438]:
+
+
+
+
+
+# In[439]:
+
+
+# student = "Caleb"
+# sub_topic = "Two digit division"
+# mistakes = get_all_student_related_mistakes(student, sub_topic)
+# # print("Related Mistakes:", mistakes)
+# mistakes
+
+
+# In[439]:
+
+
+
+
+
+# In[440]:
+
+
+# get_all_metric_mistakes(mistakes)
+
+
+# In[441]:
+
+
+# mistakes['communication']['related_mistakes']
+
+
+# In[442]:
+
+
+# get_specific_metric_mistakes('communication',mistakes)
+
+
+# In[442]:
+
+
+
 
