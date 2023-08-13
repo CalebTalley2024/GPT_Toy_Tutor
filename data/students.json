@@ -452,63 +452,60 @@
                 },
                 {
                     "sub_topic": "Addition",
-                    "level": 1,
+                    "level": 2,
                     "questions_answered": [
-                        1,
                         0,
+                        1,
                         0,
                         0,
                         0
                     ],
                     "proficiency_metrics": {
                         "overall_avg": {
-                            "avg_score": 2.0,
+                            "avg_score": 3.0,
                             "recent_scores": [
-                                2
+                                3
                             ]
                         },
                         "communication": {
-                            "avg_score": 2.0,
+                            "avg_score": 3.0,
                             "related_mistakes": [
-                                "does not clearly explain the steps taken to subtract the numbers."
+                                "did not explain his answer or show any understanding of place value."
                             ],
                             "recent_scores": [
-                                2
+                                3
                             ]
                         },
                         "interpretation": {
-                            "avg_score": 1.0,
-                            "related_mistakes": [
-                                "misinterpreted the question and did not understand that regrouping (borrowing) was not allowed",
-                                "The answer provided does not align with the given instructions."
-                            ],
+                            "avg_score": 4.0,
+                            "related_mistakes": [],
                             "recent_scores": [
-                                1
+                                4
                             ]
                         },
                         "computation": {
                             "avg_score": 1.0,
                             "related_mistakes": [
-                                "does not follow the correct method of subtraction without regrouping."
+                                "added the digits individually without considering place value"
                             ],
                             "recent_scores": [
                                 1
                             ]
                         },
                         "conceptual": {
-                            "avg_score": 1.0,
+                            "avg_score": 2.0,
                             "related_mistakes": [
-                                "lacks a clear understanding of the concept of subtraction without regrouping"
+                                "did not demonstrate a clear understanding of place value and how to add numbers with different place values"
                             ],
                             "recent_scores": [
-                                1
+                                2
                             ]
                         },
                         "time": {
                             "avg_score": 5.0,
-                            "avg_times": 20.0,
+                            "avg_times": 2.13,
                             "recent_times": [
-                                20
+                                2.1333110332489014
                             ],
                             "recent_scores": [
                                 5

@@ -5,7 +5,7 @@
 #### Questions
 - Writing nothing gets you too high of a score
 #### Errors
-
+- time error
 ##### Examples of GPT reasoning errors
 - "example Given a triangle with side lengths of 5, 6, and 7 units. Explain how you got your answer."
   - name: Jake
@@ -66,7 +66,6 @@
 
 #### Questions/Answer
 - Highlight what a students mistakes are in the answer GPT provides
-- give students the option to ask questions about the answer GPT gives them
 - tailor answers based on mistakes
 	- more help for students who need more/less help
 - if the answer is short, allow no explanation
