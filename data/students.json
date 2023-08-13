@@ -394,16 +394,12 @@
                             ]
                         }
                     }
-                }
-            ]
-        },
-        {
-            "Michael Jordan": [
+                },
                 {
-                    "sub_topic": "Addition with real numbers",
+                    "sub_topic": "addition",
                     "level": 1,
                     "questions_answered": [
-                        2,
+                        1,
                         0,
                         0,
                         0,
@@ -411,19 +407,15 @@
                     ],
                     "proficiency_metrics": {
                         "overall_avg": {
-                            "avg_score": 5.0,
+                            "avg_score": 4.8,
                             "recent_scores": [
-                                5,
-                                5
+                                4.8
                             ]
                         },
                         "communication": {
                             "avg_score": 5.0,
-                            "related_mistakes": [
-                                "too long"
-                            ],
+                            "related_mistakes": [],
                             "recent_scores": [
-                                5,
                                 5
                             ]
                         },
@@ -431,7 +423,6 @@
                             "avg_score": 5.0,
                             "related_mistakes": [],
                             "recent_scores": [
-                                5,
                                 5
                             ]
                         },
@@ -439,29 +430,199 @@
                             "avg_score": 5.0,
                             "related_mistakes": [],
                             "recent_scores": [
-                                5,
                                 5
                             ]
                         },
                         "conceptual": {
-                            "avg_score": 3.0,
+                            "avg_score": 4.0,
                             "related_mistakes": [],
                             "recent_scores": [
-                                3,
-                                3
+                                4
                             ]
                         },
                         "time": {
-                            "avg_score": 4.0,
-                            "avg_times": 30.0,
-                            "recent_times": [
-                                30,
-                                30
+                            "avg_score": 5.0,
+                            "avg_times": null,
+                            "recent_times": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        }
+                    }
+                },
+                {
+                    "sub_topic": "Addition",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 2.0,
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 2.0,
+                            "related_mistakes": [
+                                "does not clearly explain the steps taken to subtract the numbers."
                             ],
                             "recent_scores": [
-                                4,
-                                4
+                                2
                             ]
+                        },
+                        "interpretation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "misinterpreted the question and did not understand that regrouping (borrowing) was not allowed",
+                                "The answer provided does not align with the given instructions."
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "does not follow the correct method of subtraction without regrouping."
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "lacks a clear understanding of the concept of subtraction without regrouping"
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 5.0,
+                            "avg_times": 20.0,
+                            "recent_times": [
+                                20
+                            ],
+                            "recent_scores": [
+                                5
+                            ]
+                        }
+                    }
+                },
+                {
+                    "sub_topic": "Addition of one digit numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 3.2,
+                            "recent_scores": [
+                                3.2
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 3.0,
+                            "related_mistakes": [
+                                "did not explain how he arrived at his answer"
+                            ],
+                            "recent_scores": [
+                                3
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "made an error in adding the digits"
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 2.0,
+                            "related_mistakes": [
+                                "did not demonstrate a clear understanding of addition without regrouping"
+                            ],
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 5.0,
+                            "avg_times": 20.0,
+                            "recent_times": [
+                                20
+                            ],
+                            "recent_scores": [
+                                5
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "Michael Jordan": [
+                {
+                    "sub_topic": "Addition with real numbers",
+                    "level": 2,
+                    "questions_answered": [
+                        3,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 0,
+                            "recent_scores": []
+                        },
+                        "communication": {
+                            "avg_score": 0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "interpretation": {
+                            "avg_score": 0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "computation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "conceptual": {
+                            "avg_score": 0,
+                            "related_mistakes": [],
+                            "recent_scores": []
+                        },
+                        "time": {
+                            "avg_score": 0,
+                            "avg_times": null,
+                            "recent_times": [],
+                            "recent_scores": []
                         }
                     }
                 }
@@ -530,6 +691,138 @@
                             ],
                             "recent_scores": [
                                 4
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "Alison": [
+                {
+                    "sub_topic": "Subtraction",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 3.0,
+                            "recent_scores": [
+                                3
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 3.0,
+                            "related_mistakes": [
+                                "did not explain her reasoning or steps clearly"
+                            ],
+                            "recent_scores": [
+                                3
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 4.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                4
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "made an error in her computation"
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 2.0,
+                            "related_mistakes": [
+                                "did not demonstrate a clear understanding of regrouping or borrowing"
+                            ],
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 5.0,
+                            "avg_times": 27.57,
+                            "recent_times": [
+                                27.57
+                            ],
+                            "recent_scores": [
+                                5
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "Caleb Talley": [
+                {
+                    "sub_topic": "3",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 4.6,
+                            "recent_scores": [
+                                4.6
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 4.0,
+                            "related_mistakes": [
+                                "could have been more detailed and specific"
+                            ],
+                            "recent_scores": [
+                                4
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 5.0,
+                            "related_mistakes": [],
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 4.0,
+                            "related_mistakes": [
+                                "minor mistake in the explanation of borrowing from the tens place"
+                            ],
+                            "recent_scores": [
+                                4
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 5.0,
+                            "avg_times": 2.96,
+                            "recent_times": [
+                                2.96
+                            ],
+                            "recent_scores": [
+                                5
                             ]
                         }
                     }

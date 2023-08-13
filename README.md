@@ -1,12 +1,11 @@
 ## Iteration 4: MemPrompt
 - (after Meeting 2)
 ### Current Problems
+- answers for short questions can still have too high of a standard for explanations
 #### Questions
 - Writing nothing gets you too high of a score
 #### Errors
-- the database update fails if the user visits the application multiple times
-- fix questions answered error
-- change order about where you are asked if you want to pick a level ( able to pick sub topic twice)
+
 ##### Examples of GPT reasoning errors
 - "example Given a triangle with side lengths of 5, 6, and 7 units. Explain how you got your answer."
   - name: Jake
@@ -42,17 +41,17 @@
 
 ### Web Iteration
 - Svelte + FastAPI: https://github.com/OriginalStefikO/fastapi-svelte-starter
-- Webstorm vs VScode
-- Tailwind
-- tools
-	- front end: SVelte
-		- HTML
-		- CSS
-		- Javascript??
-	- backend
-		- FastAPI
-		- server: Uvicorn
-        - 
+  - Webstorm vs VScode
+  - Tailwind
+  - tools
+      - front end: SVelte
+          - HTML
+          - CSS
+          - Javascript??
+      - backend
+          - FastAPI
+          - server: Uvicorn
+          - 
 ### General Questions
 - will this app be used in multiple languages ( ex. African languages like Somali, Amharic, etc )
 - ask if it's okay to use `exec`
@@ -62,7 +61,9 @@
 - confirm button
 - try using faster language to convert string to code to solve math
 - string to python has to have specific syntax
+
 ### Next Step
+
 #### Questions/Answer
 - Highlight what a students mistakes are in the answer GPT provides
 - give students the option to ask questions about the answer GPT gives them
@@ -71,10 +72,7 @@
 - if the answer is short, allow no explanation
 	- change answer length based on grade and subtopic
 		- for basic addition, give brief
-
-
-
-
+- add mem prompt to student learning?
 - Try having GPT double check it's own answer ( using python)
 - make sure that question difficulty changes with level (1-5)
 #### Students.JSON

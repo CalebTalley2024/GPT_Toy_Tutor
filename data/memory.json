@@ -38,5 +38,17 @@
         "Feedback": [
             "too long"
         ]
+    },
+    {
+        "Question": "Level 1 (Difficulty: Easy):\nAdd the following two numbers: 12 + 7. Explain how you got your answer.",
+        "Feedback": [
+            "answer is correct, but your thought process takes too long"
+        ]
+    },
+    {
+        "Question": "Level 5 (Difficulty: Hard):\nSarah has 25 jars of candy. Each jar contains 35 pieces of candy. How many pieces of candy does Sarah have in total? Explain how you got your answer.",
+        "Feedback": [
+            "give more explanation"
+        ]
     }
 ]
