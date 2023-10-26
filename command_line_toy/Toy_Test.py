@@ -430,8 +430,8 @@ def get_gpt_clarification (question, gpt_answer, student_answer, previous_explan
 def student_clarification(question, gpt_answer, student_answer, previous_explanations):
     # Ask the student if they want clarification about the answers given
     need_clarification = input("If you want clarification, type 'Yes'. Type anything else to got to the evaluation section\n")
-
-    if need_clarification == "Yes".lower():
+    need_clarification = need_clarification.lower()
+    if need_clarification == "yes".lower():
         # Get clarification from the student using the get_gpt_clarification function
         new_clarification = get_gpt_clarification(question, gpt_answer, student_answer, previous_explanations)
 
@@ -887,8 +887,8 @@ def student_learning():
     student = input("Enter your name: ")
     sub_topic = input("Enter the sub-topic you want to learn: ")
     user_type = "user"
-    question = ask_question(student, sub_topic, user_type)
     old_student_mistakes = get_all_student_related_mistakes(student, sub_topic)
+    question = ask_question(student, sub_topic, user_type)
     metric_updates = receive_respond_and_update(question, student, sub_topic, old_student_mistakes)
     update_student_stats(student, sub_topic, metric_updates)
 
