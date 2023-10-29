@@ -4,44 +4,64 @@
             "Alice": [
                 {
                     "sub_topic": "Addition of two-digit numbers",
-                    "level": 5,
+                    "level": 3,
                     "questions_answered": [
-                        3,
-                        9,
-                        3,
-                        3,
+                        0,
+                        0,
+                        1,
+                        0,
                         0
                     ],
                     "proficiency_metrics": {
                         "overall_avg": {
-                            "avg_score": 0,
-                            "recent_scores": []
+                            "avg_score": 3.8,
+                            "recent_scores": [
+                                3.8
+                            ]
                         },
                         "communication": {
-                            "avg_score": 0,
-                            "related_mistakes": [],
-                            "recent_scores": []
+                            "avg_score": 4.0,
+                            "related_mistakes": [
+                                "Alice provided an explanation for her answer, but it was incorrect. She did not clearly explain her mistake in carrying over the digit when adding the tens place."
+                            ],
+                            "recent_scores": [
+                                4
+                            ]
                         },
                         "interpretation": {
-                            "avg_score": 0,
-                            "related_mistakes": [],
-                            "recent_scores": []
-                        },
-                        "computation": {
                             "avg_score": 5.0,
                             "related_mistakes": [],
-                            "recent_scores": []
+                            "recent_scores": [
+                                5
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 2.0,
+                            "related_mistakes": [
+                                "Alice made a mistake in her calculation by not carrying over the digit when adding the numbers in the tens place. This resulted in an incorrect answer."
+                            ],
+                            "recent_scores": [
+                                2
+                            ]
                         },
                         "conceptual": {
-                            "avg_score": 0,
-                            "related_mistakes": [],
-                            "recent_scores": []
+                            "avg_score": 3.0,
+                            "related_mistakes": [
+                                "Alice demonstrated some understanding of adding numbers in the ones place by correctly adding 8 + 2. However, she lacked the understanding of carrying over digits when adding two-digit numbers."
+                            ],
+                            "recent_scores": [
+                                3
+                            ]
                         },
                         "time": {
-                            "avg_score": 0,
-                            "avg_times": null,
-                            "recent_times": [],
-                            "recent_scores": []
+                            "avg_score": 5.0,
+                            "avg_times": 32.4,
+                            "recent_times": [
+                                32.400470495224
+                            ],
+                            "recent_scores": [
+                                5
+                            ]
                         }
                     }
                 },
@@ -88,6 +108,72 @@
                             ],
                             "recent_scores": [
                                 1
+                            ]
+                        }
+                    }
+                },
+                {
+                    "sub_topic": "Addition of 2 digit numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 2.0,
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 2.0,
+                            "related_mistakes": [
+                                "does not clearly explain the steps taken to subtract the numbers."
+                            ],
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "misinterpreted the question and did not understand that regrouping (borrowing) was not allowed",
+                                "The answer provided does not align with the given instructions."
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "does not follow the correct method of subtraction without regrouping."
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "lacks a clear understanding of the concept of subtraction without regrouping"
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 5.0,
+                            "avg_times": 20.0,
+                            "recent_times": [
+                                20
+                            ],
+                            "recent_scores": [
+                                5
                             ]
                         }
                     }
@@ -562,6 +648,72 @@
                             ],
                             "recent_scores": [
                                 2
+                            ]
+                        },
+                        "time": {
+                            "avg_score": 5.0,
+                            "avg_times": 20.0,
+                            "recent_times": [
+                                20
+                            ],
+                            "recent_scores": [
+                                5
+                            ]
+                        }
+                    }
+                },
+                {
+                    "sub_topic": "Adding one-digit numbers",
+                    "level": 1,
+                    "questions_answered": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "proficiency_metrics": {
+                        "overall_avg": {
+                            "avg_score": 2.0,
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "communication": {
+                            "avg_score": 2.0,
+                            "related_mistakes": [
+                                "does not clearly explain the steps taken to subtract the numbers."
+                            ],
+                            "recent_scores": [
+                                2
+                            ]
+                        },
+                        "interpretation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "misinterpreted the question and did not understand that regrouping (borrowing) was not allowed",
+                                "The answer provided does not align with the given instructions."
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "computation": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "does not follow the correct method of subtraction without regrouping."
+                            ],
+                            "recent_scores": [
+                                1
+                            ]
+                        },
+                        "conceptual": {
+                            "avg_score": 1.0,
+                            "related_mistakes": [
+                                "lacks a clear understanding of the concept of subtraction without regrouping"
+                            ],
+                            "recent_scores": [
+                                1
                             ]
                         },
                         "time": {
