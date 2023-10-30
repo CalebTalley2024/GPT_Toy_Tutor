@@ -1,4 +1,3 @@
-import Toy_Test as TT
 from sklearn.metrics.pairwise import cosine_similarity as cos
 from sentence_transformers import SentenceTransformer as ST
 import numpy as np
