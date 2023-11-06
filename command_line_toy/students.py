@@ -1,9 +1,10 @@
 import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
-
+#%%
 # constants
 # default collection used
 main_collection = "Section0"
+
 
 # recursively create JSON
 def obj_to_dict(obj):
@@ -19,12 +20,13 @@ def obj_to_dict(obj):
 
 # converts dictionary into student object
 def dict_to_student(dict_data):
+    # print(dict_data)
     # Initialize student Object
     student = Student(dict_data['name'], dict_data['grade'])
 
     # Initialize and fill subtopics
     for subtopic_data in dict_data['subtopics']:
-        subtopic = Subtopic(subtopic_data['subtopic_name'], subtopic_data['grade'])
+        subtopic = Subtopic(subtopic_data['name'], subtopic_data['level'])
         subtopic.num_questions_answered = subtopic_data['num_questions_answered']
 
         metrics_data = subtopic_data['metrics']
@@ -49,8 +51,10 @@ def dict_to_student(dict_data):
 
     return student
 
+
+
 class StudentsCollection:
-    def __init__(self, collection):
+    def __init__(self, collection = "Section0"):
         database = client["Students"]
         self.name = collection
         self.collection = database[collection] # a collection ( ex: Section0)
@@ -62,7 +66,7 @@ class StudentsCollection:
         print(f"{student.name} has been added to collection: {self.name}")
 
     # takes in student's name
-    # returns wanted student from database
+    # returns wanted student from database or None (student is not in database)
     def get_student(self, student_name):
         query = {"name": student_name}
         # Fetch the student data as a list
@@ -104,11 +108,34 @@ class Student:
     def in_dict_format(self):
         return obj_to_dict(self)
 
+    def current_subtopic_names(self):
+        if not len(self.subtopics) == 0:
+            return list(map(lambda subtopic: subtopic.name, self.subtopics))
+        return []
+
+    def get_subtopic(self,name):
+
+        for i,name in enumerate(self.current_subtopic_names()):
+            if name == name:
+                print(f" {name} is already in {self.name}'s database")
+
+                return self.subtopics[i]
+        # if name not found
+        print(f"{name} not found in database, so it will be created")
+        subtopic = Subtopic(name,1)
+        return subtopic
+
+    def add_subtopic(self,subtopic):
+        return self.subtopics.append(subtopic)
+
+
+
+
 
 class Subtopic:
-    def __init__(self, subtopic_name, level):
+    def __init__(self, name, level = 1):
         # how many questions you answered for each of the 5 levels of a topic
-        self.subtopic_name = subtopic_name
+        self.name = name
         self.level = level # range: 1 - 5
         self.num_questions_answered = [0,0,0,0,0] # on slot per level (5 total levels)
         # self.num_questions_answered = [5,5,5,5,5]
@@ -129,7 +156,7 @@ class Subtopic:
         # print(num_questions_current_level )
         if num_questions_current_level == 5 and average_score_current_level == 5:
             self.level += 1
-            print(f"Subtopic '{self.subtopic_name}' has been upgraded to level {self.level}")
+            print(f"Subtopic '{self.name}' has been upgraded to level {self.level}")
         else:
             print("level has not been updated")
 
@@ -149,7 +176,7 @@ class Subtopic:
     # returns and prints subtopic data in a json
     def to_json(self):
         subtopic_json = {
-            "subtopic_name": self.subtopic_name,
+            "name": self.name,
             "level": self.level,
             "num_questions_answered": self.num_questions_answered,
             "metrics": self.metrics.to_json()  # Convert metrics to JSON
@@ -158,6 +185,7 @@ class Subtopic:
         # subtopic_json = json.dumps(subtopic_json, indent=1)
         print(subtopic_json)
         return subtopic_json  # Return the JSON string with indentation
+
 
 
 
@@ -175,12 +203,11 @@ class Metrics:
     # key = metric type, value: the actual mistakes
     def get_all_mistakes(self):
         mistakes = {}
-        print("function starts")
         mistakes["communication"] = self.communication.related_mistakes
         mistakes["interpretation"] = self.interpretation.related_mistakes
         mistakes["computation"] = self.computation.related_mistakes
         mistakes["conceptual"] = self.conceptual.related_mistakes
-        return str(mistakes) # convert dict to string
+        return mistakes
 
     # update metric given update metrics in json/dict
     def update(self, all_updates):
@@ -217,7 +244,6 @@ class Metrics:
         }
         return metrics_json
 
-
 class Metric:
     # special types: time, overall_avg
 
@@ -228,7 +254,7 @@ class Metric:
         if metric_type == "time":
             self.avg_time = None
             self.recent_times = []
-        elif metric_type != "overall_avg" and metric_type == "time" :
+        elif metric_type != "overall_avg" and metric_type != "time" :
             self.related_mistakes = []
 
     # updates metrics given json of new data
@@ -249,7 +275,7 @@ class Metric:
         # print("previous scores",self.previous_scores)
 
         # replace related mistakes
-        if hasattr(self, 'related_mistakes'):
+        if hasattr(self, 'related_mistakes'): # if the section has a related_mistakes section, and section is NOT time
             self.related_mistakes = update["related_mistakes"]
             # print("related mistakes",self.related_mistakes)
 

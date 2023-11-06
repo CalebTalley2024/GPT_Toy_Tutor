@@ -123,3 +123,6 @@
 
 #### Extremely Minor/ Neglibible
 - having way to deal with name conflicts ( unlikely now because we are using a student's full name as opposed to just first name)
+
+### Things to remember
+- tighten security for MongoDB for deployment if necessary

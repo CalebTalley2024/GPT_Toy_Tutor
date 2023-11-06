@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[404]:
+# In[1]:
 
 
-from collections import defaultdict
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 #TODO use dotenv file when you release final version
 import json
 import openai
 import numpy as np
 import pandas as pd
-from sentence_transformers import SentenceTransformer as ST
-from sklearn.metrics.pairwise import cosine_similarity as cos
 import time
 
+# import custom python files for memory and students functions
+import Memory
+import students
 
-# In[405]:
+
+# In[2]:
 
 
 # get syllabus
@@ -25,7 +26,7 @@ df2 = pd.read_csv('../data/GPT_tutor_topics(sub_topics_included).csv')
 # df2
 
 
-# In[406]:
+# In[3]:
 
 
 # get key and model
@@ -36,10 +37,16 @@ memory_path = "../data/memory.json"
 question_temp = 1 # temp has to be between 0 and 2
 
 
-# In[407]:
+# In[3]:
 
 
-# data helper functions
+
+
+
+# In[4]:
+
+
+# data helper functions for JSON data
 
 # getting external data
 def get_ext_data(path):
@@ -53,13 +60,12 @@ def post_ext_data(data, path):
         json.dump(data, f, indent=4)
 
 
-# In[408]:
+# In[5]:
 
 
 # helper functions
 
 # API responses
-
 def get_response(messages):
     res = openai.ChatCompletion.create(
         model = model_35,
@@ -70,7 +76,6 @@ def get_response(messages):
 def get_response_text(messages):
     res = get_response(messages)
     return res['choices'][0]['message']['content']
-
 # be able to get the response and edit temperature
 def get_response_text_w_temp(messages, temp):
     res = openai.ChatCompletion.create(
@@ -81,7 +86,7 @@ def get_response_text_w_temp(messages, temp):
     return res['choices'][0]['message']['content']
 
 
-# In[409]:
+# In[6]:
 
 
 # creates one part of the message that you send to the GPT API for a response.
@@ -106,7 +111,7 @@ def create_message_part(text, role_type):
     return message_part
 
 
-# In[410]:
+# In[7]:
 
 
 # temporary helper functions
@@ -133,7 +138,7 @@ def manual_level_reset(name, sub_topic, level):
     post_ext_data(data, student_data_path)
 
 
-# In[411]:
+# In[8]:
 
 
 def get_student_subtopic_level(student, sub_topic):
@@ -174,7 +179,7 @@ def get_student_subtopic_level(student, sub_topic):
     return level
 
 
-# In[412]:
+# In[9]:
 
 
 # helper functions for ask_question
@@ -187,13 +192,13 @@ def filter_answers():
     }
     return message
 # is_current_student: boolean
-def init_question(student, sub_topic, use_type):
+def init_question(student, subtopic, user_type):
 
     # Prompt for level choice
-    if use_type == "user":
+    if user_type == "user":
         print("Hello User/Student! \npicking the level manually will only affect the type of questions you get")
         choice = input("Do you want to pick the level? (Y/N): ")
-    elif use_type == "trainer":
+    elif user_type == "trainer":
         print("Hello Trainer. \n Since you are training GPT_Tutor, you will be able to pick the level of the question that you get")
         choice = "Y"
     else:
@@ -203,18 +208,16 @@ def init_question(student, sub_topic, use_type):
     if choice.upper() == "Y":
         valid = True
         while valid:
-                level = int(input("Enter the level you want between 1 and 5: "))
-                if level > 5 or level < 1:
+                custom_level = int(input("Enter the level you want between 1 and 5: "))
+                if custom_level > 5 or custom_level < 1:
                     print("Invalid level, pick again.")
                 else:
                     valid = False
-        # Reset student's level if needed
-        manual_level_reset(student, sub_topic, level)
-    else:
-        level = get_student_subtopic_level(student, sub_topic)
+                    # Reset student's level if needed
+                    subtopic.level = custom_level
+                
     # criteria: tell GPT scales for proficiency and level
-
-    init = f"Based on {student}'s database, the student's skill level for {sub_topic} is {level}. Please give {student} a test question based on {sub_topic} and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
+    init = f"Based on {student}'s database, the student's skill level for {subtopic.name} is {subtopic.level}. Please give {student} a test question based on {subtopic.name} and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
     criteria = f"Level is on a scale between 1 and 5, where 5 is the hardest level."
 
     # combine criteria and message
@@ -263,13 +266,11 @@ def question_formatting():
     return formatting, level_meaning
 
 
-# 
-
-# In[446]:
+# In[10]:
 
 
 # ask question to student
-def ask_question(student, sub_topic,user_type):
+def ask_question(student, sub_topic, user_type):
     # make sure to only receive math answers and initialize the questions GPT will give
     filter_subject = filter_answers()
     filter_question = init_question(student, sub_topic,user_type)
@@ -285,13 +286,19 @@ def ask_question(student, sub_topic,user_type):
     return tutor_question
 
 
-# In[414]:
+# In[10]:
+
+
+
+
+
+# In[11]:
 
 
 # ask_question("Alice", "2 digit division","user") #test
 
 
-# In[415]:
+# In[12]:
 
 
 # time: time it took the student to answer the question given from GPT
@@ -309,11 +316,11 @@ def get_student_timed_response():
     return student_res, end_time
 
 
-# In[416]:
+# In[13]:
 
 
-def respond_to_student_ans(question, student_answer, student,gpt_ans_explanation,get_all_student_related_mistakes):
-    # take in the student's answer, and the topic
+def respond_to_student_ans(question, student_answer, student_name,gpt_ans_explanation,get_all_student_related_mistakes):
+    # take in the student_name's answer, and the topic
     print("Answer: \n")
     question_message = {
         "role": "system",
@@ -322,12 +329,12 @@ def respond_to_student_ans(question, student_answer, student,gpt_ans_explanation
     }
     answer_explained = {
         "role": "user",
-        "content": f"The GPT answer that you have found is derived below: \n{gpt_ans_explanation}\n\n{student}'s answer is {student_answer}. Tell whether the student got the question correct based on the GPT answer and give and provide an explanation of the correct answer. Also explain where the student is incorrect"
+        "content": f"The GPT answer that you have found is derived below: \n{gpt_ans_explanation}\n\n{student_name}'s answer is {student_answer}. Tell whether the student got the question correct based on the GPT answer and give and provide an explanation of the correct answer. Also explain where the student is incorrect"
     }
 
     use_student_mistakes = {
         "role": "user",
-        "content": f" These are the mistakes that {student} made while doing these types of problems: {get_all_student_related_mistakes}. in your answer. high light how he has improved on his mistakes,and/or how he is still doing the same mistake. If the studnet does not currently have any related mistakes, dont mention anything about related mistakes"
+        "content": f" These are the mistakes that {student_name} made while doing these types of problems: {get_all_student_related_mistakes}. in your answer. high light how he has improved on his mistakes,and/or how he is still doing the same mistake. If the studnet does not currently have any related mistakes, dont mention anything about related mistakes"
     }
     init_response_messages = [question_message,answer_explained,use_student_mistakes]
 
@@ -337,11 +344,11 @@ def respond_to_student_ans(question, student_answer, student,gpt_ans_explanation
 
     return answer_res
 
-def grade_student_response(question, student_answer, student,solve_time, sub_topic,answer_res):
+def grade_student_response(question, student_answer, student_name,solve_time, sub_topic,answer_res):
 
     print("Evaluation: \n")
     # if the question being asked is simple we want to make sure the user does not have to give an explanation if non is needed
-    # here are examples of questions that dont need  much explanation
+    # here are examples of questions that don't need  much explanation
     simple_question_examples = """
     Addition: 2 + 3, 99 + 92
     Subtraction: 10 - 4, 345 - 234
@@ -353,11 +360,11 @@ def grade_student_response(question, student_answer, student,solve_time, sub_top
     evaluation_messages = [
         {
             "role": "system",
-            "content": f"The topic of the question is {sub_topic}. This is the question given to {student}: {question}. {student}'s answer is {student_answer}. This  is the answer you gave: {answer_res}."
+            "content": f"The topic of the question is {sub_topic}. This is the question given to {student_name}: {question}. {student_name}'s answer is {student_answer}. This  is the answer you gave: {answer_res}."
         },
         {
             "role": "system",
-            "content": f"This I need you to evaluate {student}'s performance in terms of the following skill metrics: communication, interpretation, computation, conceptual, and the time taken to solve the question (it took the student {solve_time} seconds to complete the question. For each of these metrics, rate the skill out of 5, where 5 out of 5 is the best score, and 1 out of 5 is the worst score. make sure to have your evaluation in outline format. Also give an explanation on how {student} did not get the highest marks. Make sure to use Integers, NOT decimals "
+            "content": f"This I need you to evaluate {student_name}'s performance in terms of the following skill metrics: communication, interpretation, computation, conceptual, and the time taken to solve the question (it took the student {solve_time} seconds to complete the question. For each of these metrics, rate the skill out of 5, where 5 out of 5 is the best score, and 1 out of 5 is the worst score. make sure to have your evaluation in outline format. Also give an explanation on how {student_name} did not get the highest marks. Make sure to use Integers, NOT decimals "
         },
         {
             "role": "system",
@@ -387,7 +394,7 @@ def grade_student_response(question, student_answer, student,solve_time, sub_top
 
 
 
-# In[417]:
+# In[14]:
 
 
 # give students the ability to ask for clarification regarding a question they have about the answer to the question
@@ -430,6 +437,7 @@ def get_gpt_clarification (question, gpt_answer, student_answer, previous_explan
 def student_clarification(question, gpt_answer, student_answer, previous_explanations):
     # Ask the student if they want clarification about the answers given
     need_clarification = input("If you want clarification, type 'Yes'. Type anything else to got to the evaluation section\n")
+
     need_clarification = need_clarification.lower()
     if need_clarification == "yes".lower():
         # Get clarification from the student using the get_gpt_clarification function
@@ -444,7 +452,7 @@ def student_clarification(question, gpt_answer, student_answer, previous_explana
         print("Student questioning section has been completed.\nNext: Metric scores for performance\n")
 
 
-# In[418]:
+# In[15]:
 
 
 # question = "Solve for x: 2x + 5 = 15"
@@ -454,7 +462,7 @@ def student_clarification(question, gpt_answer, student_answer, previous_explana
 # student_clarification(question, gpt_answer, student_answer, previous_explanations)
 
 
-# In[ ]:
+# In[16]:
 
 
 # gpt_res: evaluation on how the student answered the questions
@@ -492,9 +500,9 @@ def extract_metrics_scores(gpt_res):
         Explanation:
         Allan's performance was generally strong across all skill metrics. He effectively communicated his answer and demonstrated a good understanding of the concept. However, his explanation could have been more detailed and comprehensive, which affected his score in the communication and conceptual understanding categories. Overall, Allan performed well and achieved a high average score of 4.6 out of 5.
         """
-
     # What the function should output
-    example_1_res = """
+    # TODO: if you are having issues with example_1_res, use the OLD version here
+    example_1_res_OLD = """
         {
                 {
         "overall_avg": 4.6,
@@ -521,6 +529,32 @@ def extract_metrics_scores(gpt_res):
     }
     }
     """
+    # What the function should output
+    example_1_res = '''
+                {
+        "overall_avg": 4.6,
+        "communication": {
+            "score": 4,
+            "related_mistakes": ["could have been more elaboration and clarity in his explanation."]
+        },
+        "interpretation": {
+            "score: 5,
+            "related_mistakes": []
+        },
+        "computation": {
+            "score: 5,
+            "related_mistakes": []
+        },
+        "conceptual": {
+            "score: 4,
+            "related_mistakes": ["explanation could have included more conceptual details to further enhance his understanding"]
+        },
+        "time": {
+            "score: 5,
+            "seconds": 20
+        }
+    }
+    '''
 
     example_2_eval = """
         Evaluation of Alice's Performance:
@@ -595,62 +629,14 @@ def extract_metrics_scores(gpt_res):
     # return metric_scores_string
 
 
-# In[445]:
+# In[17]:
 
 
-def get_specific_metric_mistakes(specific_metric,metrics_data):
-    related_mistakes = metrics_data[specific_metric]['related_mistakes']
-
-    return related_mistakes
-
-def get_all_metric_mistakes(metrics_data):
-    metric_types = ["communication","interpretation", "computation","conceptual"]
-
-    related_mistakes = []
-    for metric_type in metric_types:
-        # print(metric_type)
-        specific_mistakes = get_specific_metric_mistakes(metric_type, metrics_data)
-        related_mistakes.append(specific_mistakes)
-
-    related_mistakes_str = f"{related_mistakes}"
-    return related_mistakes_str
-
-def get_all_student_related_mistakes(student, sub_topic):
-    # Assuming you have the data dictionary defined
-    data = get_ext_data(student_data_path)
-    # Find the student in the data dictionary
-    student_data = None
-    for student_entry in data['students']:
-        if student in student_entry:
-            student_data = student_entry[student]
-            break
-
-    if student_data is None:
-        return "Student not found"
-
-    # Find the sub-topic in the student's data
-    sub_topic_data = None
-    for topic in student_data:
-        if topic['sub_topic'] == sub_topic:
-            sub_topic_data = topic
-            break
-
-    if sub_topic_data is None:
-        return "Sub-topic not found for this student"
-
-    metrics = sub_topic_data['proficiency_metrics']
-    # Retrieve the related mistakes from the sub-topic data
-    related_mistakes = get_all_metric_mistakes(metrics)
-    # return metrics
-    print(f"{student}'s previous mistakes with the sub_topic : {sub_topic}: {related_mistakes}\n")
-    return related_mistakes
-
-
-# In[420]:
-
-
+# question: String
+# student, sub_topic: custom Objects
+# all_student_subtopic_mistakes: dictionary
 # receive student's answer, respond to their answer, and update their statistics
-def receive_respond_and_update(question, student, sub_topic,get_all_student_related_mistakes):
+def receive_respond_and_update(question, student, sub_topic, all_student_subtopic_mistakes):
     # Get the student's response and the time taken
     student_answer, solve_time = get_student_timed_response()
 
@@ -660,11 +646,11 @@ def receive_respond_and_update(question, student, sub_topic,get_all_student_rela
     # uses "memPrompt" like memory
     gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
 
-    answer_res = respond_to_student_ans(question, student_answer, student, gpt_ans_explanation,get_all_student_related_mistakes)
+    answer_res = respond_to_student_ans(question, student_answer, student.name, gpt_ans_explanation,all_student_subtopic_mistakes)
 
     previous_explanations = " " # we start the previous explanations empty
     student_clarification(question,answer_res,student_answer,previous_explanations)
-    gpt_res = grade_student_response(question, student_answer, student, solve_time, sub_topic,answer_res)
+    gpt_res = grade_student_response(question, student_answer, student.name, solve_time, sub_topic.name,answer_res)
 
     # Extract metric updates from the GPT response
     metric_updates = extract_metrics_scores(gpt_res)
@@ -673,244 +659,14 @@ def receive_respond_and_update(question, student, sub_topic,get_all_student_rela
     return metric_updates
 
 
-# In[421]:
-
-
-# test_new_update = receive_respond_and_update("What is 1 + 1", "Alice", "basic addition")
-
-
-# In[422]:
-
-
-# checks to see if the student has done well enough at a subtopic to move up a level
-def is_level_update_needed(overall_avg_stats):
-    bool = False
-    avg_score, recent_scores =  overall_avg_stats["avg_score"],overall_avg_stats["recent_scores"]
-    # if the avg score is 5, and we have 3 scores that make up the average, we need a level update
-    if avg_score == 5 and len(recent_scores) == 3:
-        bool = True
-    return bool
-
-# creates subtopic section with metric updates
-def create_sub_topic_section(sub_topic, metric_updates):
-    # make a new section
-    new_section = {
-        "sub_topic": sub_topic,
-        "level": 1,
-        "questions_answered": [0,0,0,0,0],
-        "proficiency_metrics": clear_metrics()
-    }
-    # update the section with the metric updates
-    new_section["proficiency_metrics"],new_section["level"],new_section["questions_answered"] = update_data(new_section,metric_updates)
-
-    return new_section
-
-# deletes a subtopic's metric data for user
-def clear_metrics():
-    metrics = {
-        "overall_avg": {
-            "avg_score": 0,
-            "recent_scores": [
-            ]
-        },
-        "communication": {
-            "avg_score": 0,
-            "related_mistakes": [
-            ],
-            "recent_scores": [
-            ]
-        },
-        "interpretation": {
-            "avg_score": 0,
-            "related_mistakes": [],
-            "recent_scores": []
-        },
-        "computation": {
-            "avg_score": 5.0,
-            "related_mistakes": [],
-            "recent_scores": []
-        },
-        "conceptual": {
-            "avg_score": 0,
-            "related_mistakes": [],
-            "recent_scores": []
-        },
-        "time": {
-            "avg_score": 0,
-            "avg_times": None,
-            "recent_times": [
-            ],
-            "recent_scores": [
-            ]
-        }}
-    return metrics
-
-# helper functions for update_student_stats
-# returns updated single metric array with the average value of the array
-# recent_single_metric_score
-# new_score: a score for one metric
-def update_scores_and_average(recent_single_metric_scores, new_score):
-
-    # the database stores the 3 most recent scores, so we will have to add our new_score and get rid of the old one
-
-    # add new score
-    # print(recent_single_metric_score)
-    recent_single_metric_scores += [new_score]
-    # remove the oldest score if there are more than 3 numbers in the list
-    if len(recent_single_metric_scores) > 3:
-        recent_single_metric_score = recent_single_metric_scores.pop(0)
-        # recent_single_metric_score = recent_single_metric_scores[1:]
-        # print(recent_single_metric_score)
-
-    # get the new avg score and round to the last 2 decimals
-    new_avg_score = np.mean(recent_single_metric_scores)
-    new_avg_score = round(new_avg_score, 2)
-    return recent_single_metric_scores,new_avg_score
-
-
-
-# updata_data takes in a subtopic's data and metric_updates that need to be implemented
-# returns the updated data, specifically the metrics, the level and the questions the student has answered
-def update_data(data,metrics_updates):
-
-    metrics, level,questions_answered  =  data["proficiency_metrics"], data["level"],data["questions_answered"]
-
-    # update metrics
-    metrics = update_metrics(metrics,metrics_updates)
-    # update level and questions_answered
-
-    # each index of the array corresponds to the amount of questions answered a a certain level of difficulty
-    questions_answered[level-1] += 1
-
-    # if we have to upgrade to the next level, we get rid of our previous level's stats
-    if is_level_update_needed(metrics["overall_avg"]):
-        # print(level)
-        if level >= 5:
-            topic = data["sub_topic"]
-            print(f"Congratulations, you have mastered the topic: {topic} the highest level available. Please pick another topic to learn. ")
-            # THe database will not reset and you will just keep all of your scores
-        else:
-            level += 1
-            print(f"Congratulations, you have moved up to Level {level}")
-            metrics = clear_metrics() # remove previous level's data
-
-
-    return metrics,level,questions_answered
-
-
-# updates all of the metrics for any subtopic
-# takes in metrics and the updated from a recent evaluation
-# returns updated metrics
-def update_metrics(metrics, metric_updates):
-    # print(f"\n\n metrics:{metrics} \n\n")
-    # print(f"\n\n metrics updates:{metric_updates} \n\n")
-    metric_types = ['overall_avg', 'communication', 'interpretation', 'computation', 'conceptual', 'time']
-
-# Iterate and update each metric
-    for metric_type in metric_types:
-        metric, metric_update = metrics[metric_type], metric_updates[metric_type]
-
-        if metric_type == "overall_avg":
-            new_score = metric_update
-
-        else:
-            # print(metric_update)
-            new_score = metric_update["avg_score"]
-            if 'related_mistakes' in metric_update:
-                metric['related_mistakes'] = metric_update['related_mistakes']
-            if 'seconds' in metric_update:
-                new_time = metric_update['seconds']
-                metric['recent_times'], metric['avg_times'] = update_scores_and_average(metric['recent_times'], new_time)
-
-        # print(f"\n{metric}\n")
-        # print(metric_type)
-        metric['recent_scores'], metric['avg_score'] = update_scores_and_average(metric['recent_scores'], new_score)
-
-    return metrics
-
-
-# In[423]:
-
-
-# updates the student metrics in the database
-def update_student_stats(name, sub_topic, metric_updates):
-    # Get data from students.json
-    data = get_ext_data(student_data_path)
-
-    # Check if the student is in the database
-    students = data["students"]
-    for student in students:
-        if name in student:
-            # Check if the student has a section for the given subtopic
-            sections = student[name]
-            for section in sections:
-                if section["sub_topic"] == sub_topic:
-                    # Update the student's metrics
-                    section["proficiency_metrics"], section["level"],section["questions_answered"], = update_data(section,metric_updates)
-                    print(f"{name}'s data metrics for '{sub_topic} 'has been updated ")
-                    break
-            else:
-                # update stats with cleared metric data
-                new_section = create_sub_topic_section(sub_topic,metric_updates)
-                # If the student does not have data for that subtopic, add metric_updates
-                sections.append(new_section)
-                print(f"{name}'s data metrics for '{sub_topic}' has been added ")
-
-            break
-    else:
-        # If the student is not found in the database, create a new entry
-        # update stats with cleared metric data
-        new_section = create_sub_topic_section(sub_topic,metric_updates)
-        students.append({
-            name: [new_section]})
-        print(f"{name}'s data metrics for '{sub_topic}'has been added ")
-    # Write the updated data back to students.json
-    post_ext_data(data, student_data_path)
-
-
-# In[424]:
-
-
-#TODO Highlight what a students mistakes are in the answer GPT provides
-#TODO give students the option to ask questions about the answer GPT gives them
-#TODO tailor answers based on mistakes
-#TODO if the answer is short, allow no explanation
-#TODO change answer length based on grade and subtopic
-
-
-# In[425]:
-
-
-# asks student question, evaluates and updates their database
-def student_learning():
-    """Asks the student a question and updates their stats."""
-    student = input("Enter your name: ")
-    sub_topic = input("Enter the sub-topic you want to learn: ")
-    user_type = "user"
-    old_student_mistakes = get_all_student_related_mistakes(student, sub_topic)
-    question = ask_question(student, sub_topic, user_type)
-    metric_updates = receive_respond_and_update(question, student, sub_topic, old_student_mistakes)
-    update_student_stats(student, sub_topic, metric_updates)
-
-    # Ask the student if they want to be asked another question.
-    answer = input("Do you want another question? 'Yes' or 'No' ")
-    while answer not in ("Yes", "No"):
-        answer = input("Please enter 'Yes' or 'No': ")
-
-    if answer == "Yes":
-        student_learning()
-    else:
-        print("Thank you for using GPT Tutor! Have a great day.")
-
-
-# In[426]:
+# In[41]:
 
 
 #TODO make a test portion
 #TODO Evaluating AI/Student's Answer to question
 
 
-# In[427]:
+# In[22]:
 
 
 # converts question's format into python formatting
@@ -955,7 +711,7 @@ def backtrack_to_explanation(question, answer):
     return explanation
 
 
-# In[428]:
+# In[23]:
 
 
 #### TRYING TO run python code to get question right
@@ -1047,7 +803,7 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 
 
 
-# In[429]:
+# In[24]:
 
 
 q1 = "What is 0.96**5"
@@ -1064,72 +820,28 @@ Calculate the total cost of buying each cup.
 #
 # ans1 = solve_simple_math(code_b)
 
-# explain_simple_math(q4)
+# explain_simple_math(q1)
 
 
 
 # 
 # 
 
-# In[430]:
+# In[25]:
 
 
-# gets only the "Question" keys of JSON
-def get_memory_questions(filler_questions):
-    data = [question["Question"] for question in filler_questions]
-    return data
-
-# Generate sentence embeddings for all the keys in the JSON file.
-# does cosine similarity for Questions ONLY
-# returns question and similarity score
-# if the question is already in the database, it will still be returned with this function ( similarity will equal 1)d
-def find_most_similar_question(query):
-    model = ST('all-MiniLM-L6-v2')
-
-    # Load the JSON file.
-    data = get_ext_data(memory_path)
-
-    # Preprocess the query to all lowercase.
-    query = query.lower()
-
-    # embed the query
-    query_embed = model.encode(query)
-
-    # Get all of the questions that are in the database
-
-    questions = get_memory_questions(data)
-
-    # embed the memory's questions into vector representation
-
-    memory_embeds = model.encode(questions)
-
-    # calculate the cosine similarity of each embed from memory compared to the query embed
-    cos_sim = cos([query_embed], memory_embeds)
-
-    # most_similar_question = np.max(cos_sim)
-# get the index of the question with the highest similarity score
-    most_similar_question_index = np.argmax(cos_sim)
-
-    most_similar_question = questions[most_similar_question_index]
-
-    return most_similar_question
+# 0.96**5
 
 
-# In[431]:
+# In[26]:
 
 
-# given question, will find a similar question in the database, then give you feedback
-# we just return an empty array if there is no associated feedback to the question
-def get_feedback(question):
-    data = get_ext_data(memory_path)
-    feedback  = []
+# query = "Calculate the area of a rectangle with length 5 and width 8."
+# Memory.find_most_similar_memory(query)
 
-    for entry in data:
-        if entry['Question'] == question:
-            return entry['Feedback']
 
-    # convert the feedback into a string
-    return feedback
+# In[27]:
+
 
 # creates prompt with question and feedback if it exists
 def create_prompt(question, feedback):
@@ -1149,11 +861,6 @@ def create_prompt(question, feedback):
 
     return prompt
 
-def generate_explained_answer(prompt):
-    ans = get_response_text(prompt)
-    return ans
-
-
 
 def get_answer_from_explanation(explained_ans):
     instruction = "From the given explanation, give only the question solved and the answer given"
@@ -1170,7 +877,9 @@ def get_answer_from_explanation(explained_ans):
 
 # splits up explained answer into two parts: The answer itself and the explanation that leads to the answer
 def get_answer_and_explanation(prompt):
-    explanation = generate_explained_answer(prompt)
+
+    # generate the explained answer
+    explanation = get_response_text(prompt)
     answer = get_answer_from_explanation(explanation)
     return explanation, answer
 
@@ -1214,43 +923,46 @@ def update_memory(question, answer, explanation):
     need_feedback = input("does the answer and explanation above require any feedback: 'Yes', or 'No'")
     if need_feedback == 'Yes':
         feedback = input("What needs to be improved in the analysis process?")
-        send_feedback(question, feedback)
+        memories0 = Memory.Memories() # creates Memories Object
+        memories0.update_memory_feedback(question, feedback)
     else:
         print("Memory will not be updated")
 
 
-# In[432]:
+# In[28]:
 
 
 # GPT answser the question with the feedback memory json
 def get_answer_explanation_with_memory(question):
-    similar_question =  find_most_similar_question(question)
-    # get the feedback associated with the question / similar question
-    feedback = get_feedback(similar_question)
+    # get the feedback associated with the most similar question
+    _,similar_feedback = Memory.find_most_similar_memory(question)
     # convert the list to a string
-    feedback_str = f"{feedback}"
+    feedback_str = f"{similar_feedback}"
     # print(type(feedback_str))
     print(f"found feedback from memory.json: {feedback_str}")
     prompt = create_prompt(question,feedback_str)
 
-    # return question
     # get the GPT generated answer and explanation
     #ans_explanation: gives both the answer to the quesiton and the explanation of the answer
     ans_explanation, answer = get_answer_and_explanation(prompt)
     return ans_explanation,answer
 
 
-# In[433]:
+# In[29]:
 
 
 # based off "MemPrompt: Memory-assisted Prompt Editing with User Feedback" paper
 def mem_prompt_learning():
-    sub_topic = input("Enter the sub-topic you want to learn: ")
+    sub_topic_name = input("Enter the sub-topic you want to learn: ")
     user_type = "trainer"
-    student_placeholder = "trainer" # placeholder for a student's name. This will NOT negatively affect the ask_question function
+
+    # make subtopic and studnet objects we will use just for training
+    # nothing will chagne in teh students database collection on MongoDB
+    sub_topic_placeholder = students.Subtopic(sub_topic_name,1)
+    student_placeholder = students.Student("trainer",1) # placeholder for a student's name. This will NOT negatively affect the ask_question function
 
     # get the question
-    question = ask_question(student_placeholder,sub_topic,user_type)
+    question = ask_question(student_placeholder,sub_topic_placeholder,user_type)
     # find the question, or the most similar question that's in the database already
     # get the GPT generated answer and explanation
     explanation, answer = get_answer_explanation_with_memory(question)
@@ -1260,28 +972,106 @@ def mem_prompt_learning():
     update_memory(question, answer, explanation)
 
     # Ask the student if they want to be asked another question.
-    answer = input("Do you want another question? 'Yes' or 'No' ")
-    while answer not in ("Yes", "No"):
-        answer = input("Please enter 'Yes' or 'No': ")
+    answer = input("Do you want another question? 'yes' or 'no' ")
 
-    if answer == "Yes":
+    answer = answer.lower()
+    while answer not in ("yes", "no"):
+        answer = input("Invalid input: Please enter 'yes' or 'no': ")
+
+    if answer == "yes":
         mem_prompt_learning()
     else:
         print("Thank you training GPT Tutor! Have a great day.")
 
 
-# In[434]:
+# In[30]:
+
+
+
+# asks student question, evaluates and updates their database
+def student_learning():
+
+    user_type = "user"
+    # get students database collection from MongoDB
+    main_collection = "Section0"
+    StudentCollection = students.StudentsCollection(main_collection)
+    all_student_names = StudentCollection.current_student_names()
+
+
+    """Asks the student a question and updates their stats."""
+    full_name = input("Enter your full name (Example: John Doe): ")
+    grade_level = input("What grade are you in (Grade 1-12): ")
+    sub_topic_name = input("Enter the sub-topic you want to learn: ")
+
+    # if student is in database, get the object
+    if full_name in all_student_names:
+        print(f"{full_name} is already in the database")
+        student = StudentCollection.get_student(full_name)
+    else:
+        # if the student is not in the database, create the object
+        print(f"{full_name} will be added to the database")
+        student = students.Student(full_name,float(grade_level)) # initialize student
+
+
+    mistakes = [] # initialize mistakes array for student
+    # find out if the has data related to the subtopic
+    if sub_topic_name in student.current_subtopic_names():
+        sub_topic = student.get_subtopic(sub_topic_name)
+    else:
+        sub_topic = students.Subtopic(sub_topic_name,1)
+        # connect subtopic object  to student object
+        student.add_subtopic(sub_topic)
+        sub_topic = student.get_subtopic(sub_topic_name)
+
+        # find all student's old mistakes for subtopic
+        mistakes = sub_topic.metrics.get_all_mistakes()
+        # mistakes is a map with the following keys: communication, interpretation, computation, and conceptual
+
+    # ask the student a question
+    question = ask_question(student.name, sub_topic, user_type)
+
+    # print(question)
+
+    # receive answer,  calculate GPT answer, have a chance for the student to ask questions, evaluate student
+    metric_updates = receive_respond_and_update(question, student, sub_topic, mistakes)
+
+    # return metric_updates
+    # # update the database
+    #
+    sub_topic.update_subtopic(metric_updates)
+
+    # remove old object and add new object ( updates object if it already is in database)
+    if student.name in all_student_names:
+        StudentCollection.delete_student(student)
+
+    StudentCollection.add_student(student)
+    #
+    # StudentCollection
+
+    # Ask the student if they want to be asked another question.
+    answer = input("Do you want another question? 'yes' or 'no' ")
+
+    answer = answer.lower() # make the 'Yes' or 'No' lowercase
+
+    while answer not in ("yes", "no"):
+        answer = input("Invalid input; Please enter 'yes' or 'no': ")
+
+    if answer == "yes":
+        student_learning()
+    else:
+        print("Thank you for using GPT Tutor! Have a great day.")
+
+
+
+
+# In[31]:
 
 
 def main():
     """
-
     The main function that starts the learning process for either....
-
     The student, or GPT
-
     """
-
     # User: Uses GPT_Tutor to learn math
     # Trainer: Testing GPT_Tutors knowledge ( ~ to MemPrompt paper)
 
@@ -1302,9 +1092,7 @@ def main():
             mem_prompt_learning()
         if usage_type == "exit":
             valid = True
-
-
-# In[435]:
+# In[32]:
 
 
 # Check if the script is being run directly
@@ -1312,66 +1100,14 @@ if __name__ == "__main__":
     main()
 
 
-# In[436]:
+# In[45]:
 
 
-# grade_student_response("What is 99 * 99", "99 * 99 = 9801","Alice",20, "basic arithmetic")
+# grade_student_response("What is 99 * 99", "99 * 99 = 9801","Alice",20, "basic arithmetic", "the answer is 9801")
 
 
 # In[437]:
 
 
 # student_learning()
-
-
-# In[437]:
-
-
-
-
-
-# In[438]:
-
-
-
-
-
-# In[439]:
-
-
-# student = "Caleb"
-# sub_topic = "Two digit division"
-# mistakes = get_all_student_related_mistakes(student, sub_topic)
-# # print("Related Mistakes:", mistakes)
-# mistakes
-
-
-# In[439]:
-
-
-
-
-
-# In[440]:
-
-
-# get_all_metric_mistakes(mistakes)
-
-
-# In[441]:
-
-
-# mistakes['communication']['related_mistakes']
-
-
-# In[442]:
-
-
-# get_specific_metric_mistakes('communication',mistakes)
-
-
-# In[442]:
-
-
-
 
