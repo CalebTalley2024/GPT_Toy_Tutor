@@ -190,7 +190,6 @@ class Subtopic:
 
 
 class Metrics:
-
     def __init__(self):
         self.overall_avg = Metric("overall_avg")
         self.communication = Metric()
