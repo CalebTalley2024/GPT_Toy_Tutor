@@ -3,7 +3,7 @@ from pymongo.server_api import ServerApi
 
 password = "GPTTutor"
 
-uri = f"mongodb+srv://CalebTalley:{password}@cluster0.b3k8luy.mongodb.net/?retryWrites=true&w=majority"
+uri = f"mongodb+srv://CalebTalley:{password}@cluster0.b3k8luy.mongodb.net/?retryWrites=true&w=majority" #TODO Add environment variables later
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
 

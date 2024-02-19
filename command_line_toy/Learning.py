@@ -4,10 +4,11 @@
 # In[1]:
 
 
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 #TODO use dotenv file when you release final version
 import json
 import openai
+import os
 import numpy as np
 import pandas as pd
 import time
@@ -29,8 +30,12 @@ df2 = pd.read_csv('../data/GPT_tutor_topics(sub_topics_included).csv')
 # In[3]:
 
 
+load_dotenv()
+
+
 # get key and model
-openai.api_key = "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"
+openai.api_key = os.getenv('OPENAI_KEY_1')
+# openai.api_key = "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"
 model_35 = "gpt-3.5-turbo"
 student_data_path = "../data/students.json"
 memory_path = "../data/memory.json"
@@ -1111,3 +1116,5 @@ if __name__ == "__main__":
 
 # student_learning()
 
+
+#%%
