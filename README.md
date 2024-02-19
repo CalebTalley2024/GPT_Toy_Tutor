@@ -115,14 +115,16 @@
 - Docker
 - Gorilla AI
 
-## Iteration 5: MongoDB
+## Iteration 4.5: MongoDB
 - Now have MongoDB database for storing memory
 - Added OOP for memorys\
 
 ### Issues
-
+- sometimes when running student_learning I get the following error `ServiceUnavailableError: The server is overloaded or not ready yet.`
+- takes extremely long to load everythign
 #### Extremely Minor/ Neglibible
 - having way to deal with name conflicts ( unlikely now because we are using a student's full name as opposed to just first name)
 
 ### Things to remember
 - tighten security for MongoDB for deployment if necessary
+
