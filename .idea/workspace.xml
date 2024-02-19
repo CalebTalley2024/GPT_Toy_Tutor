@@ -5,37 +5,34 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="331376f1-0107-4f8d-b567-f90db61ebde5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/command_line_toy/Learning.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/Learning.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/command_line_toy/Memory.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/Memory.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/command_line_toy/Students.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/Students.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/.vscode/extensions.json" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/.vscode/extensions.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/public/assets/vite.svg" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/public/assets/vite.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/public/buffer.text" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/public/buffer.text" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/src/App.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/src/app.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/assets/svelte.svg" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/src/assets/svelte.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/lib/Counter.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/src/lib/Counter.svelte" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/src/main.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/vite-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/src/vite-env.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/svelte.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/svelte.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/tsconfig.node.json" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/tsconfig.node.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/frontend/vite.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/assets/css/index-9ea02431.css" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/public/assets/css/index-9ea02431.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/assets/images/svelte.svg" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/public/assets/images/svelte.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/assets/images/vite.svg" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/public/assets/images/vite.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/assets/js/main-7c116d8f.js" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/public/assets/js/main-7c116d8f.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/assets/vite.svg" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/public/assets/vite.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/buffer.text" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/public/buffer.text" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/public/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/potential_front_end/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/LinUCB.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/LinUCBVI.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/NeuralUCBVI.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucb_cosine.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucb_linear.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucb_quad.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_cosine.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_cosine_policy.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_linear.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_linear_policy.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_quad.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_quad_policy.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucb_cosine.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucb_linear.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucb_quad.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_cosine.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_cosine_policy.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_linear.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_linear_policy.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_quad.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_quad_policy.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/neural_exploration/neural_exploration/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/linucb.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/linucbvi.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/mdp.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/neuralucbvi.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/ucbvi.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
