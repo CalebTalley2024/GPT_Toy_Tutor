@@ -481,7 +481,11 @@ def extract_metrics_scores(gpt_res): #TODO fix extract_metric scores, the respon
     
     Answer this question in the form of a JSON file.
     
-    Please respond in plain text without using any code formatting like 'json', '```', <string>, etc. 
+    Please respond in plain text without using any code formatting like 
+    DO NOT USE THE FOLLOWING
+     - 'json', 
+     - '```', 
+     - <string>, etc. 
 
 
 '''
