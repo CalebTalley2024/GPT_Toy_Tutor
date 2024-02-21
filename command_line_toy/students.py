@@ -113,16 +113,16 @@ class Student:
             return list(map(lambda subtopic: subtopic.name, self.subtopics))
         return []
 
-    def get_subtopic(self,name):
+    def get_subtopic(self,subtopic_name):
 
         for i,name in enumerate(self.current_subtopic_names()):
-            if name == name:
-                print(f" {name} is already in {self.name}'s database")
+            if subtopic_name == subtopic_name:
+                print(f" {subtopic_name} is already in {self.name}'s database")
 
                 return self.subtopics[i]
         # if name not found
-        print(f"{name} not found in database, so it will be created")
-        subtopic = Subtopic(name,1)
+        print(f"{subtopic_name} not found in database, so it will be created")
+        subtopic = Subtopic(subtopic_name,1)
         return subtopic
 
     def add_subtopic(self,subtopic):
@@ -210,6 +210,7 @@ class Metrics:
 
     # update metric given update metrics in json/dict
     def update(self, all_updates):
+        print(f"updates JSON: \n{all_updates}\n")
         # attributes each metric has
         # if the json does not have a value for an update, the value in the Metric object will remain unchanged
         avg_comm = self.communication.update(all_updates["communication"])
@@ -261,6 +262,8 @@ class Metric:
     # update: JSON
     # returns average score for metric
     def update(self, update):
+
+        print(f"updates JSON: \n{update}\n")
         # get metrics previous scores
         prev_scores = self.previous_scores
         # add new score,
@@ -274,12 +277,12 @@ class Metric:
         # print("previous scores",self.previous_scores)
 
         # replace related mistakes
-        if hasattr(self, 'related_mistakes'): # if the section has a related_mistakes section, and section is NOT time
+        if hasattr(update, 'related_mistakes'): # if the section has a related_mistakes section, and section is NOT time
             self.related_mistakes = update["related_mistakes"]
             # print("related mistakes",self.related_mistakes)
 
         # if there is  time attribute, update the time data:
-        if hasattr(self, 'recent_times'):
+        if hasattr(update, 'recent_times'):
             recent_times = self.recent_times
             recent_times.append(update["seconds"])
             if len(recent_times) == 6:

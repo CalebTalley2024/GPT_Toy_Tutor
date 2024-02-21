@@ -471,13 +471,17 @@ def student_clarification(question, gpt_answer, student_answer, previous_explana
 
 
 # gpt_res: evaluation on how the student answered the questions
-def extract_metrics_scores(gpt_res):
+def extract_metrics_scores(gpt_res): #TODO fix extract_metric scores, the response uses "scores"
     instruction = f'''
 
 
-    Here is the Evaluation for a certain studnet. \n\n{gpt_res}\n\n---\n.
+    Here is the Evaluation for a certain student. \n\n{gpt_res}\n\n---\n.
 
-    From this evaluation, extract it's evaluation metric numbers and put them in teh shape of a JSON file. Answer this question in the form of a JSON file
+    From this evaluation, extract it's evaluation metric numbers and put them in teh shape of a JSON file. 
+    
+    Answer this question in the form of a JSON file.
+    
+    Please respond in plain text without using any code formatting like 'json', '```', <string>, etc. 
 
 
 '''
@@ -592,23 +596,23 @@ def extract_metrics_scores(gpt_res):
         {
             "overall_avg": 2,
             "communication": {
-                "avg_score": 2,
+                "score": 2,
                 "related_mistakes": [" does not clearly explain the steps taken to subtract the numbers."]
             },
             "interpretation": {
-                "avg_score": 1,
+                "score": 1,
                 "related_mistakes": [misinterpreted the question and did not understand that regrouping (borrowing) was not allowed,The answer provided does not align with the given instructions.]
             },
             "computation": {
-                "avg_score": 1,
+                "score": 1,
                 "related_mistakes": [does not follow the correct method of subtraction without regrouping.]
             },
             "conceptual": {
-                "avg_score": 1,
+                "score": 1,
                 "related_mistakes": ["lacks a clear understanding of the concept of subtraction without regrouping"]
             },
             "time": {
-                "avg_score": 5,
+                "score": 5,
                 "seconds": 20
             }
     }
@@ -623,9 +627,10 @@ def extract_metrics_scores(gpt_res):
     messages = [instruction_msg, example_1_res_msg, example_1_res_ans,example_2_res_msg,example_2_res_ans]
 
     # get JSON data in form of response string
-    metric_scores_string =  get_response_text(messages)
+    metric_scores_string = get_response_text_w_temp(messages,0) # temp  = 0
 
     # make the string a JSON
+    # print(f"\nMetrics_scores_string {metric_scores_string} \n")
 
     metric_scores_json = eval(metric_scores_string)
     return metric_scores_json
