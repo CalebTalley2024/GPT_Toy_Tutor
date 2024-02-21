@@ -1,76 +1,9 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
-
-
-# In[2]:
-
-
+#%%
 # constants
 # default collection used
 main_collection = "Section0"
-
-
-# In[3]:
-
-
-# examples for visualizing jsons
-# format of 'all_updates':
-all_updates_example1 = {
-    "overall_avg": 4.6,
-    "communication": {
-        "score": 4,
-        "related_mistakes": ["could have been more elaboration and clarity in his explanation."]
-    },
-    "interpretation": {
-        "score": 5,
-        "related_mistakes": []
-    },
-    "computation": {
-        "score": 5,
-        "related_mistakes": []
-    },
-    "conceptual": {
-        "score": 4,
-        "related_mistakes": ["explanation could have included more conceptual details to further enhance his understanding"]
-    },
-    "time": {
-        "score": 5,
-        "seconds": 20
-    }
-}
-
-all_updates_example_all_5 = {
-    "overall_avg": 5,
-    "communication": {
-        "score": 5,
-        "related_mistakes": ["could have been more elaboration and clarity in his explanation."]
-    },
-    "interpretation": {
-        "score": 5,
-        "related_mistakes": []
-    },
-    "computation": {
-        "score": 5,
-        "related_mistakes": []
-    },
-    "conceptual": {
-        "score": 5,
-        "related_mistakes": ["explanation could have included more conceptual details to further enhance his understanding"]
-    },
-    "time": {
-        "score": 5,
-        "seconds": 20
-    }
-}
-
-
-# In[4]:
 
 
 # recursively create JSON
@@ -88,7 +21,6 @@ def obj_to_dict(obj):
 # converts dictionary into student object
 def dict_to_student(dict_data):
     # print(dict_data)
-
     # Initialize student Object
     student = Student(dict_data['name'], dict_data['grade'])
 
@@ -119,8 +51,6 @@ def dict_to_student(dict_data):
 
     return student
 
-
-# In[5]:
 
 
 class StudentsCollection:
@@ -174,46 +104,32 @@ class Student:
         self.name = name
         self.grade = grade
         self.subtopics = [] # array of Subtopic objects
-        self.mistakes = np.empty(shape=(0,2)) # init as 0 x 2 array (Question, Mistakes) #TODO later add is_student_answer_correct
 
     def in_dict_format(self):
         return obj_to_dict(self)
-    
+
     def current_subtopic_names(self):
-        if not len (self.subtopics) == 0:
+        if not len(self.subtopics) == 0:
             return list(map(lambda subtopic: subtopic.name, self.subtopics))
+        return []
 
     def get_subtopic(self,subtopic_name):
-        
+
         for i,name in enumerate(self.current_subtopic_names()):
-            if name == subtopic_name:
+            if subtopic_name == subtopic_name:
                 print(f" {subtopic_name} is already in {self.name}'s database")
-                
+
                 return self.subtopics[i]
         # if name not found
         print(f"{subtopic_name} not found in database, so it will be created")
         subtopic = Subtopic(subtopic_name,1)
         return subtopic
-    
+
     def add_subtopic(self,subtopic):
         return self.subtopics.append(subtopic)
-  
-    def add_mistakes(self, all_updates):
-        question = all_updates["question"]
-        mistake = all_updates["mistake"]
-        question_mistake_row = np.array([question,mistake])
-        return np.append(self.mistakes,[question_mistake_row])
 
 
-# In[6]:
 
-
-# SC = StudentsCollection()
-# Alice = SC.get_student("Alice Carter")
-# Alice.current_subtopic_names()
-
-
-# In[7]:
 
 
 class Subtopic:
@@ -228,7 +144,8 @@ class Subtopic:
     # resets metrics
     def clear_metrics(self):
         self.metrics = Metrics()
-        
+
+    # TODO need to be tested
     # updates the level if the metrics have a perfect score for the last 5 questions
     def update_level(self):
         #check teh amount of questions answered for the current level
@@ -243,7 +160,7 @@ class Subtopic:
         else:
             print("level has not been updated")
 
-    # metric_updates: string or json or dictionary: updates that need to be done for metrics 
+    # metric_updates: string or json or dictionary: updates that need to be done for metrics
     def update_subtopic(self, all_updates):
         # find level
         # print("current level ", self.level)
@@ -270,7 +187,6 @@ class Subtopic:
         return subtopic_json  # Return the JSON string with indentation
 
 
-# In[8]:
 
 
 class Metrics:
@@ -290,10 +206,11 @@ class Metrics:
         mistakes["interpretation"] = self.interpretation.related_mistakes
         mistakes["computation"] = self.computation.related_mistakes
         mistakes["conceptual"] = self.conceptual.related_mistakes
-        return mistakes # convert dict to string
+        return mistakes
 
     # update metric given update metrics in json/dict
     def update(self, all_updates):
+        print(f"updates JSON: \n{all_updates}\n")
         # attributes each metric has
         # if the json does not have a value for an update, the value in the Metric object will remain unchanged
         avg_comm = self.communication.update(all_updates["communication"])
@@ -327,12 +244,9 @@ class Metrics:
         }
         return metrics_json
 
-
-# In[ ]:
-
-
 class Metric:
     # special types: time, overall_avg
+
     # order of recent_times and related mistakes (oldest..... newest)
     def __init__(self, metric_type = None):
         self.avg_score = 0
@@ -348,6 +262,8 @@ class Metric:
     # update: JSON
     # returns average score for metric
     def update(self, update):
+
+        # print(f"updates JSON: \n{update}\n")
         # get metrics previous scores
         prev_scores = self.previous_scores
         # add new score,
@@ -361,12 +277,12 @@ class Metric:
         # print("previous scores",self.previous_scores)
 
         # replace related mistakes
-        if hasattr(self, 'related_mistakes') and not self.avg_time: # if the section has a related_mistakes section, and section is NOT time:
+        if hasattr(update, 'related_mistakes'): # if the section has a related_mistakes section, and section is NOT time
             self.related_mistakes = update["related_mistakes"]
             # print("related mistakes",self.related_mistakes)
 
         # if there is  time attribute, update the time data:
-        if hasattr(self, 'recent_times'):
+        if hasattr(update, 'recent_times'):
             recent_times = self.recent_times
             recent_times.append(update["seconds"])
             if len(recent_times) == 6:
@@ -389,40 +305,3 @@ class Metric:
             metric_json["related_mistakes"] = self.related_mistakes
 
         return metric_json
-    
-
-
-# In[9]:
-
-
-
-
-
-# 
-
-# In[11]:
-
-
-# testing
-# sub1 = Subtopic(" basic addition", 1)
-# sub1.metrics = Metrics()
-# sub1.update_subtopic(all_updates_example_all_5)
-
-
-
-# In[12]:
-
-
-# testing to_json
-# a = sub1.to_json()
-
-
-# 
-
-# In[ ]:
-
-
-
-
-
-#%%

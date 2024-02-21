@@ -5,34 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="331376f1-0107-4f8d-b567-f90db61ebde5" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/command_line_toy/students_old.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/GPT_Toy_Tutor.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/GPT_Toy_Tutor.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/LinUCB.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/LinUCBVI.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/NeuralUCBVI.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucb_cosine.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucb_linear.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucb_quad.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_cosine.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_cosine_policy.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_linear.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_linear_policy.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_quad.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/linucbvi_quad_policy.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucb_cosine.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucb_linear.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucb_quad.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_cosine.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_cosine_policy.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_linear.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_linear_policy.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_quad.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/figures/neural_ucbvi_quad_policy.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/neural_exploration/neural_exploration/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/linucb.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/linucbvi.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/mdp.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/neuralucbvi.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/neural_exploration/ucbvi.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/command_line_toy/Learning.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/learning.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/command_line_toy/Learning.py" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/learning.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/command_line_toy/Memory.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/memory.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/command_line_toy/Memory.py" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/memory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/command_line_toy/Students.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/students.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/command_line_toy/students.py" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/students.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sources.md" beforeDir="false" afterPath="$PROJECT_DIR$/sources.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +44,8 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/caleb/Programming Projects/WPI Projects/GPT_Toy_Tutor&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/caleb/Programming Projects/WPI Projects/GPT_Toy_Tutor&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   },
   &quot;keyToStringList&quot;: {
     &quot;DatabaseDriversLRU&quot;: [
@@ -73,8 +58,37 @@
       <recent name="C:\Users\caleb\Programming Projects\WPI Projects\GPT_Toy_Tutor" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\caleb\Programming Projects\WPI Projects\GPT_Toy_Tutor\command_line_toy" />
       <recent name="C:\Users\caleb\Programming Projects\WPI Projects\GPT_Toy_Tutor\potential_front_end" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="learning" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GPT_Toy_Tutor" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/command_line_toy" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\caleb\Programming Projects\WPI Projects\GPT_Toy_Tutor\command_line_toy\learning.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.learning" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
 </project>

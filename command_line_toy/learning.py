@@ -14,8 +14,8 @@ import pandas as pd
 import time
 
 # import custom python files for memory and students functions
-import Memory
-import students
+import memory
+import students_old
 
 
 # In[2]:
