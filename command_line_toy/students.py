@@ -8,7 +8,7 @@ import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
 
 
-# In[2]:
+# In[10]:
 
 
 # constants
@@ -16,58 +16,12 @@ from database_connect import client # gets MongoDB client, which gives access to
 main_collection = "Section0"
 
 
-# In[3]:
+# In[11]:
 
 
 # examples for visualizing jsons
 # format of 'all_updates':
-all_updates_example1 = {
-    "overall_avg": 4.6,
-    "communication": {
-        "score": 4,
-        "related_mistakes": ["could have been more elaboration and clarity in his explanation."]
-    },
-    "interpretation": {
-        "score": 5,
-        "related_mistakes": []
-    },
-    "computation": {
-        "score": 5,
-        "related_mistakes": []
-    },
-    "conceptual": {
-        "score": 4,
-        "related_mistakes": ["explanation could have included more conceptual details to further enhance his understanding"]
-    },
-    "time": {
-        "score": 5,
-        "seconds": 20
-    }
-}
 
-all_updates_example_all_5 = {
-    "overall_avg": 5,
-    "communication": {
-        "score": 5,
-        "related_mistakes": ["could have been more elaboration and clarity in his explanation."]
-    },
-    "interpretation": {
-        "score": 5,
-        "related_mistakes": []
-    },
-    "computation": {
-        "score": 5,
-        "related_mistakes": []
-    },
-    "conceptual": {
-        "score": 5,
-        "related_mistakes": ["explanation could have included more conceptual details to further enhance his understanding"]
-    },
-    "time": {
-        "score": 5,
-        "seconds": 20
-    }
-}
 
 
 # In[4]:
@@ -128,13 +82,11 @@ class StudentsCollection:
         database = client["Students"]
         self.name = collection
         self.collection = database[collection] # a collection ( ex: Section0)
-
     def add_student(self,student):
         # make student into dictionary format
         student_dict = student.in_dict_format()
         self.collection.insert_one(student_dict)
         print(f"{student.name} has been added to collection: {self.name}")
-
     # takes in student's name
     # returns wanted student from database or None (student is not in database)
     def get_student(self, student_name):
@@ -153,12 +105,10 @@ class StudentsCollection:
 
         except ValueError as e:
             print(e)
-
     def delete_student(self,student):
         query = {"name": student.name}
         self.collection.delete_one(query)
         print(f"{student.name} has been deleted from collection: {self.name}")
-
     # gets list of all students in collection
     def current_student_names(self):
         student_names = []
@@ -168,7 +118,6 @@ class StudentsCollection:
 
             student_names.append(datam["name"])
         return student_names
-
 class Student:
     def __init__(self,name, grade: float):
         self.name = name
@@ -182,30 +131,31 @@ class Student:
     def current_subtopic_names(self):
         if not len (self.subtopics) == 0:
             return list(map(lambda subtopic: subtopic.name, self.subtopics))
+        else: 
+            return []
 
     def get_subtopic(self,subtopic_name):
-        
         for i,name in enumerate(self.current_subtopic_names()):
             if name == subtopic_name:
                 print(f" {subtopic_name} is already in {self.name}'s database")
-                
                 return self.subtopics[i]
         # if name not found
         print(f"{subtopic_name} not found in database, so it will be created")
         subtopic = Subtopic(subtopic_name,1)
         return subtopic
-    
     def add_subtopic(self,subtopic):
         return self.subtopics.append(subtopic)
-  
+
     def add_mistakes(self, all_updates):
         question = all_updates["question"]
-        mistake = all_updates["mistake"]
-        question_mistake_row = np.array([question,mistake])
-        return np.append(self.mistakes,[question_mistake_row])
+        mistakes = all_updates["mistakes"]
+        # Assuming mistakes is a list, add them individually
+        for mistake in mistakes:
+            question_mistake_row = np.array([question, mistake])  # Shape: (2, )
+            self.mistakes = np.append(self.mistakes, [question_mistake_row])  # Add within a list to preserve shape
 
 
-# In[6]:
+# In[40]:
 
 
 # SC = StudentsCollection()
@@ -213,7 +163,7 @@ class Student:
 # Alice.current_subtopic_names()
 
 
-# In[7]:
+# In[31]:
 
 
 class Subtopic:
@@ -237,13 +187,14 @@ class Subtopic:
         # if a student has been asked 5 questions, AND the average score for the metrics is 5...... increment the level
         average_score_current_level = self.metrics.overall_avg.avg_score
         # print(num_questions_current_level )
+        print(self.level)
         if num_questions_current_level == 5 and average_score_current_level == 5:
             self.level += 1
             print(f"Subtopic '{self.name}' has been upgraded to level {self.level}")
         else:
             print("level has not been updated")
 
-    # metric_updates: string or json or dictionary: updates that need to be done for metrics 
+    # all_updates: string or json or dictionary: updates that need to be done for metrics 
     def update_subtopic(self, all_updates):
         # find level
         # print("current level ", self.level)
@@ -270,7 +221,7 @@ class Subtopic:
         return subtopic_json  # Return the JSON string with indentation
 
 
-# In[8]:
+# In[32]:
 
 
 class Metrics:
@@ -328,7 +279,7 @@ class Metrics:
         return metrics_json
 
 
-# In[ ]:
+# In[33]:
 
 
 class Metric:
@@ -340,8 +291,8 @@ class Metric:
         if metric_type == "time":
             self.avg_time = None
             self.recent_times = []
-        elif metric_type != "overall_avg" and metric_type != "time" :
-            self.related_mistakes = []
+        # elif metric_type != "overall_avg" and metric_type != "time" :
+        #     self.related_mistakes = []
 
     # updates metrics given json of new data
     # NOT USED to update overall_avg ( can only be updated in "Metrics" object
@@ -361,9 +312,9 @@ class Metric:
         # print("previous scores",self.previous_scores)
 
         # replace related mistakes
-        if hasattr(self, 'related_mistakes') and not self.avg_time: # if the section has a related_mistakes section, and section is NOT time:
-            self.related_mistakes = update["related_mistakes"]
-            # print("related mistakes",self.related_mistakes)
+        # if hasattr(self, 'related_mistakes') and not hasattr(self, "avg_time"): # if the section has a related_mistakes section, and section is NOT time:
+        #     self.related_mistakes = update["related_mistakes"]
+        #     # print("related mistakes",self.related_mistakes)
 
         # if there is  time attribute, update the time data:
         if hasattr(self, 'recent_times'):
@@ -385,14 +336,14 @@ class Metric:
         if hasattr(self, "avg_time"):
             metric_json["avg_time"] = self.avg_time
             metric_json["recent_times"] = self.recent_times
-        elif hasattr(self, "related_mistakes"):
-            metric_json["related_mistakes"] = self.related_mistakes
+        # elif hasattr(self, "related_mistakes"):
+        #     metric_json["related_mistakes"] = self.related_mistakes
 
         return metric_json
     
 
 
-# In[9]:
+# In[33]:
 
 
 
@@ -400,17 +351,49 @@ class Metric:
 
 # 
 
-# In[11]:
+# In[34]:
 
 
-# testing
+# # testing
+# student_data_import_json = {
+#     "communication": {
+#         "score": 2
+#     },
+#     "computation": {
+#         "score": 1
+#     },
+#     "conceptual": {
+#         "score": 1
+#     },
+#     "interpretation": {
+#         "score": 1
+#     },
+#     "mistakes": [
+#         "does not clearly explain the steps taken to subtract the numbers.",
+#         "misinterpreted the question and did not understand that regrouping (borrowing) was not allowed,The answer provided does not align with the given instructions.",
+#         "does not follow the correct method of subtraction without regrouping.",
+#         "lacks a clear understanding of the concept of subtraction without regrouping"
+#     ],
+#     "overall_avg": 2,
+#     "question": "A bakery has 86 cupcakes. They sell 59 cupcakes. How many cupcakes do they have left? Solve this without regrouping (borrowing). Show your work.",
+#     "time": {
+#         "score": 5,
+#         "seconds": 23
+#     }
+# }
+
+
+# In[38]:
+
+
 # sub1 = Subtopic(" basic addition", 1)
 # sub1.metrics = Metrics()
-# sub1.update_subtopic(all_updates_example_all_5)
+# sub1.update_subtopic(student_data_import_json)
 
 
 
-# In[12]:
+
+# In[11]:
 
 
 # testing to_json
@@ -425,4 +408,8 @@ class Metric:
 
 
 
-#%%
+# In[11]:
+
+
+
+
