@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[80]:
 
 
+import json
 import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
 
 
-# In[10]:
+# In[81]:
 
 
 # constants
@@ -16,15 +17,14 @@ from database_connect import client # gets MongoDB client, which gives access to
 main_collection = "Section0"
 
 
-# In[11]:
+# In[82]:
 
 
 # examples for visualizing jsons
 # format of 'all_updates':
 
 
-
-# In[4]:
+# In[18]:
 
 
 # recursively create JSON
@@ -33,9 +33,9 @@ def obj_to_dict(obj):
     if isinstance(obj, list): # if list
         return [obj_to_dict(e) for e in obj]
     elif isinstance(obj, dict): # if dictionary or object
-        return {key: obj_to_dict(value) for key, value in obj.items()}
+        return {str(key): obj_to_dict(value) for key, value in obj.items()}
     elif hasattr(obj, '__dict__'): # if object
-        return {key: obj_to_dict(value) for key, value in obj.__dict__.items()}
+        return {str(key): obj_to_dict(value) for key, value in obj.__dict__.items()}
     else: # if primitive
         return obj
 
@@ -74,7 +74,7 @@ def dict_to_student(dict_data):
     return student
 
 
-# In[5]:
+# In[19]:
 
 
 class StudentsCollection:
@@ -85,6 +85,7 @@ class StudentsCollection:
     def add_student(self,student):
         # make student into dictionary format
         student_dict = student.in_dict_format()
+        print(student_dict)
         self.collection.insert_one(student_dict)
         print(f"{student.name} has been added to collection: {self.name}")
     # takes in student's name
@@ -155,7 +156,7 @@ class Student:
             self.mistakes = np.append(self.mistakes, [question_mistake_row])  # Add within a list to preserve shape
 
 
-# In[40]:
+# In[20]:
 
 
 # SC = StudentsCollection()
@@ -163,65 +164,37 @@ class Student:
 # Alice.current_subtopic_names()
 
 
-# In[31]:
+# In[86]:
 
 
 class Subtopic:
     def __init__(self, name, level = 1):
         # how many questions you answered for each of the 5 levels of a topic
         self.name = name
-        self.level = level # range: 1 - 5
-        self.num_questions_answered = [0,0,0,0,0] # on slot per level (5 total levels)
-        # self.num_questions_answered = [5,5,5,5,5]
-        self.metrics = Metrics()
-
-    # resets metrics
-    def clear_metrics(self):
-        self.metrics = Metrics()
-        
-    # updates the level if the metrics have a perfect score for the last 5 questions
-    def update_level(self):
-        #check teh amount of questions answered for the current level
-        ques_answered = self.num_questions_answered
-        num_questions_current_level = ques_answered[self.level-1] # -1 b/c of 0 based indexing
-        # if a student has been asked 5 questions, AND the average score for the metrics is 5...... increment the level
-        average_score_current_level = self.metrics.overall_avg.avg_score
-        # print(num_questions_current_level )
-        print(self.level)
-        if num_questions_current_level == 5 and average_score_current_level == 5:
-            self.level += 1
-            print(f"Subtopic '{self.name}' has been upgraded to level {self.level}")
-        else:
-            print("level has not been updated")
-
+        self.metrics_map = {} #Hashmap of metrics (key: level, value: Metrics Object) 
     # all_updates: string or json or dictionary: updates that need to be done for metrics 
     def update_subtopic(self, all_updates):
-        # find level
-        # print("current level ", self.level)
-        level = self.level
         # update the metrics
-        self.metrics.update(all_updates)
-        # update the amount of quesitons
-        # add 1 to the index that corresponds to the level ( "index -1" because the array is 0 based)
-        self.num_questions_answered[level-1] +=1
-        # update the level if needed
-        self.update_level()
-
+        # find hashmap value/metrics object that corresponds to the level/key
+        key = all_updates["level"]
+        if not self.metrics_map.get(key, None): # if None, 
+            # add default Metrics object if isn't one in the map at the key
+            self.metrics_map[key] = Metrics()
+        metrics_to_update = self.metrics_map[key]
+        metrics_to_update.update(all_updates)
     # returns and prints subtopic data in a json
     def to_json(self):
-        subtopic_json = {
-            "name": self.name,
-            "level": self.level,
-            "num_questions_answered": self.num_questions_answered,
-            "metrics": self.metrics.to_json()  # Convert metrics to JSON
-        }
+        subtopic_json = {"name": self.name, "metrics": {}}  
+        #add all related metrics by level
+        for level, metrics in self.metrics_map.items():
+            subtopic_json["metrics"][level] = metrics.to_json() 
 
-        # subtopic_json = json.dumps(subtopic_json, indent=1)
-        print(subtopic_json)
+        subtopic_json = json.dumps(subtopic_json, indent=2)
+        # print(subtopic_json)
         return subtopic_json  # Return the JSON string with indentation
 
 
-# In[32]:
+# In[87]:
 
 
 class Metrics:
@@ -261,12 +234,8 @@ class Metrics:
         prev_scores.append(new_average)
         if len(prev_scores) == 6:
             prev_scores.pop(0)
-
         # us the average of average scores to get the new "overall avg" score
         self.overall_avg.avg_score = np.mean(prev_scores)
-
-        # print("score avg", self.overall_avg.avg_score)
-        # print("previous scores",self.overall_avg.previous_scores)
     def to_json(self):
         metrics_json = {
             "overall_avg": self.overall_avg.to_json(),
@@ -279,7 +248,7 @@ class Metrics:
         return metrics_json
 
 
-# In[33]:
+# In[88]:
 
 
 class Metric:
@@ -288,33 +257,25 @@ class Metric:
     def __init__(self, metric_type = None):
         self.avg_score = 0
         self.previous_scores = []
+        self.num_questions = 0      # total number of questions asked
         if metric_type == "time":
             self.avg_time = None
             self.recent_times = []
-        # elif metric_type != "overall_avg" and metric_type != "time" :
-        #     self.related_mistakes = []
-
     # updates metrics given json of new data
     # NOT USED to update overall_avg ( can only be updated in "Metrics" object
     # update: JSON
     # returns average score for metric
     def update(self, update):
-        # get metrics previous scores
+        # update num_questions
+        self.num_questions += 1
+        # get metrics previous scores and add new score,
         prev_scores = self.previous_scores
-        # add new score,
         prev_scores.append(update["score"])
         # remove oldest score
         if len(prev_scores) == 6:
             prev_scores.pop(0)
         # get the average
         self.avg_score = np.mean(prev_scores)
-        # print("score avg", self.avg_score)
-        # print("previous scores",self.previous_scores)
-
-        # replace related mistakes
-        # if hasattr(self, 'related_mistakes') and not hasattr(self, "avg_time"): # if the section has a related_mistakes section, and section is NOT time:
-        #     self.related_mistakes = update["related_mistakes"]
-        #     # print("related mistakes",self.related_mistakes)
 
         # if there is  time attribute, update the time data:
         if hasattr(self, 'recent_times'):
@@ -325,13 +286,13 @@ class Metric:
             self.avg_time = np.mean(recent_times)
             # print("time average",self.avg_time)
             # print("recent times",self.recent_times)
-
         return self.avg_score
 
     def to_json(self):
         metric_json = {
             "avg_score": self.avg_score,
-            "previous_scores": self.previous_scores
+            # "previous_scores": self.previous_scores
+            "num_questions": self.num_questions
         }
         if hasattr(self, "avg_time"):
             metric_json["avg_time"] = self.avg_time
@@ -343,19 +304,10 @@ class Metric:
     
 
 
-# In[33]:
+# In[94]:
 
 
-
-
-
-# 
-
-# In[34]:
-
-
-# # testing
-# student_data_import_json = {
+# student_data_import_json_1 = {
 #     "communication": {
 #         "score": 2
 #     },
@@ -379,37 +331,21 @@ class Metric:
 #     "time": {
 #         "score": 5,
 #         "seconds": 23
-#     }
+#     },
+#      "level": 5
 # }
 
 
-# In[38]:
+# In[95]:
 
 
 # sub1 = Subtopic(" basic addition", 1)
-# sub1.metrics = Metrics()
-# sub1.update_subtopic(student_data_import_json)
-
-
-
-
-# In[11]:
-
-
-# testing to_json
-# a = sub1.to_json()
+# sub1.update_subtopic(student_data_import_json_1)
+# sub1.to_json()
 
 
 # 
 
-# In[ ]:
+#%%
 
-
-
-
-
-# In[11]:
-
-
-
-
+#%%

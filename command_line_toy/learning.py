@@ -15,7 +15,7 @@ import time
 
 # import custom python files for memory and students functions
 import memory
-import students_old
+import students
 
 
 # In[2]:
