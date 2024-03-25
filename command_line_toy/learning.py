@@ -1,24 +1,22 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 from dotenv import load_dotenv
-#TODO use dotenv file when you release final version
 import json
 import openai
 import os
 import numpy as np
 import pandas as pd
 import time
-
 # import custom python files for memory and students functions
 import memory
 import students
 
 
-# In[2]:
+# In[3]:
 
 
 # get syllabus
@@ -27,12 +25,10 @@ df2 = pd.read_csv('../data/GPT_tutor_topics(sub_topics_included).csv')
 # df2
 
 
-# In[3]:
+# In[4]:
 
 
 load_dotenv()
-
-
 # get key and model
 openai.api_key = os.getenv('OPENAI_KEY_1')
 # openai.api_key = "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"
@@ -42,17 +38,10 @@ memory_path = "../data/memory.json"
 question_temp = 1 # temp has to be between 0 and 2
 
 
-# In[3]:
-
-
-
-
-
-# In[4]:
+# In[5]:
 
 
 # data helper functions for JSON data
-
 # getting external data
 def get_ext_data(path):
     with open(path, "r") as file:
@@ -65,11 +54,10 @@ def post_ext_data(data, path):
         json.dump(data, f, indent=4)
 
 
-# In[5]:
+# In[6]:
 
 
 # helper functions
-
 # API responses
 def get_response(messages):
     res = openai.ChatCompletion.create(
@@ -91,7 +79,7 @@ def get_response_text_w_temp(messages, temp):
     return res['choices'][0]['message']['content']
 
 
-# In[6]:
+# In[7]:
 
 
 # creates one part of the message that you send to the GPT API for a response.
@@ -107,84 +95,14 @@ def create_message_part(text, role_type):
         role = "assistant"
     elif role_type == 3:
         role = "user"
-
     message_part = {
         "role": role,
         "content": text
     }
-
     return message_part
 
 
-# In[7]:
-
-
-# temporary helper functions
-def manual_level_reset(name, sub_topic, level):
-    # Get data from students.json
-    data = get_ext_data(student_data_path)
-
-    # Check if the student is in the database
-    students = data['students']
-    for student in students:
-        if name in student:
-            # Check if the student has a section for the given subtopic
-            sections = student[name]
-            for section in sections:
-                if section['sub_topic'] == sub_topic:
-                    # Reset the student's metrics
-                    section['proficiency_metrics'] = clear_metrics()
-                    section['level'] =  level
-                    section['questions_answered'] = [0, 0, 0, 0, 0]
-                    print(f"{name}'s data metrics for '{sub_topic}' has been reset.")
-                    break
-    print("level changed, database stats reset")
-    # Write the updated data back to students.json
-    post_ext_data(data, student_data_path)
-
-
 # In[8]:
-
-
-def get_student_subtopic_level(student, sub_topic):
-    # Read the JSON file
-    data = get_ext_data(student_data_path)
-
-    # if we don't find the student, or the subtopic in the database, we will use the lowest level by default
-    default_level = 1
-
-    # Access the student's data from the database
-    student_data = None
-    for student_entry in data["students"]:
-        if student in student_entry:
-            student_data = student_entry[student]
-            break
-
-    if student_data is not None:
-        # Find the sub-topic information for the student
-        sub_topic_data = None
-        for entry in student_data:
-            if entry["sub_topic"] == sub_topic:
-                sub_topic_data = entry
-                break
-
-    # Check if student exists in the database
-    if student_data is None:
-        print("student is not in database. They will be start at Level 1, Proficiency 1")
-        return default_level
-    # Check if sub-topic exists for the student
-    if sub_topic_data is None:
-        print(f"student has no data for '{sub_topic}' in this database. They will be start at Level 1.")
-        return default_level
-    else:
-        # Retrieve the level and proficiency scores
-        level = sub_topic_data["level"]
-
-    # Return the level and proficiency scores
-    return level
-
-
-# In[9]:
 
 
 # helper functions for ask_question
@@ -201,28 +119,22 @@ def init_question(student, subtopic, user_type):
 
     # Prompt for level choice
     if user_type == "user":
-        print("Hello User/Student! \npicking the level manually will only affect the type of questions you get")
-        choice = input("Do you want to pick the level? (Y/N): ")
+        print("Hello User/Student! \npick the level of difficulty that you want.")
     elif user_type == "trainer":
         print("Hello Trainer. \n Since you are training GPT_Tutor, you will be able to pick the level of the question that you get")
-        choice = "Y"
     else:
         print("Invalid input")
 
     # If statement based on the choice
-    if choice.upper() == "Y":
-        valid = True
-        while valid:
-                custom_level = int(input("Enter the level you want between 1 and 5: "))
-                if custom_level > 5 or custom_level < 1:
-                    print("Invalid level, pick again.")
-                else:
-                    valid = False
-                    # Reset student's level if needed
-                    subtopic.level = custom_level
+    valid = True
+    level = -1
+    while level > 5 or level < 1: # continue the loop till we have a valid level
+        level = int(input("Enter the level you want between 1 and 5: "))
+        if level > 5 or level < 1:
+            print("Invalid level, pick again.")
                 
     # criteria: tell GPT scales for proficiency and level
-    init = f"Based on {student}'s database, the student's skill level for {subtopic.name} is {subtopic.level}. Please give {student} a test question based on {subtopic.name} and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
+    init = f"Based on {student}'s database, the student's skill level for {subtopic.name} is {level}. Please give {student} a test question based on {subtopic.name} and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
     criteria = f"Level is on a scale between 1 and 5, where 5 is the hardest level."
 
     # combine criteria and message
@@ -271,7 +183,7 @@ def question_formatting():
     return formatting, level_meaning
 
 
-# In[10]:
+# In[9]:
 
 
 # ask question to student
@@ -291,19 +203,19 @@ def ask_question(student, sub_topic, user_type):
     return tutor_question
 
 
+# In[9]:
+
+
+
+
+
 # In[10]:
-
-
-
-
-
-# In[11]:
 
 
 # ask_question("Alice", "2 digit division","user") #test
 
 
-# In[12]:
+# In[11]:
 
 
 # time: time it took the student to answer the question given from GPT
@@ -321,7 +233,7 @@ def get_student_timed_response():
     return student_res, end_time
 
 
-# In[13]:
+# In[12]:
 
 
 def respond_to_student_ans(question, student_answer, student_name,gpt_ans_explanation,get_all_student_related_mistakes):
@@ -362,6 +274,34 @@ def grade_student_response(question, student_answer, student_name,solve_time, su
     Square of a number: 4**2, 78**2
     Cube of a number: 3**3
     """
+
+    example_eval = """
+        Evaluation of Allan's Performance:
+        
+        Question: What is 25 + 36
+        Student's Answer is Correct?: True
+        Level: 3
+        
+        1. Communication: 4/5
+           - Allan effectively communicated his answer and explanation in a clear and concise manner. However, there could have been more elaboration and clarity in his explanation.
+
+        2. Interpretation: 5/5
+           - Allan correctly interpreted the given equation and understood the objective of isolating x.
+
+        3. Computation: 5/5
+           - Allan correctly performed the necessary computation steps to solve the equation and obtained the correct answer.
+
+        4. Conceptual Understanding: 4/5
+           - Allan demonstrated a good understanding of the concept of isolating x in an equation. However, his explanation could have included more conceptual details to further enhance his understanding.
+
+        5. Time Taken: 5/5
+           - Allan was able to solve the question in a relatively short amount of time, taking only 20 seconds.
+
+        Average Score: (4 + 5 + 5 + 4 + 5) / 5 = 4.6/5
+
+        Explanation:
+        Allan's performance was generally strong across all skill metrics. He effectively communicated his answer and demonstrated a good understanding of the concept. However, his explanation could have been more detailed and comprehensive, which affected his score in the communication and conceptual understanding categories. Overall, Allan performed well and achieved a high average score of 4.6 out of 5.
+        """
     evaluation_messages = [
         {
             "role": "system",
@@ -369,7 +309,7 @@ def grade_student_response(question, student_answer, student_name,solve_time, su
         },
         {
             "role": "system",
-            "content": f"This I need you to evaluate {student_name}'s performance in terms of the following skill metrics: communication, interpretation, computation, conceptual, and the time taken to solve the question (it took the student {solve_time} seconds to complete the question. For each of these metrics, rate the skill out of 5, where 5 out of 5 is the best score, and 1 out of 5 is the worst score. make sure to have your evaluation in outline format. Also give an explanation on how {student_name} did not get the highest marks. Make sure to use Integers, NOT decimals "
+            "content": f"I need you to evaluate {student_name}'s performance in terms of the following skill metrics: communication, interpretation, computation, conceptual, and the time taken to solve the question (it took the student {solve_time} seconds to complete the question. For each of these metrics, rate the skill out of 5, where 5 out of 5 is the best score, and 1 out of 5 is the worst score. make sure to have your evaluation in outline format. Also give an explanation on how {student_name} did not get the highest marks. Make sure to use Integers, NOT decimals "
         },
         {
             "role": "system",
@@ -387,19 +327,29 @@ def grade_student_response(question, student_answer, student_name,solve_time, su
         {
             "role": "system",
             "content": "make sure that you always have a time metric"
+        },
+        {
+            "role": "system",
+            "content": "Make sure to display the Question first in the following format (<question> = the question asked): \n Question: <question>"
+        },
+        {
+            "role": "system",
+            "content": f"Example response:{example_eval} "
         }
+        
     ]
     evaluation_res = get_response_text(evaluation_messages)
     print(evaluation_res)
     print(" \n\n")
-    metrics_scores = extract_metrics_scores(evaluation_res)
+    # metrics_scores = extract_metrics_scores(evaluation_res)
 
     # print(metrics_scores)
-    return  metrics_scores
+    # return  metrics_scores
+
+    return evaluation_res
 
 
-
-# In[14]:
+# In[13]:
 
 
 # give students the ability to ask for clarification regarding a question they have about the answer to the question
@@ -457,7 +407,7 @@ def student_clarification(question, gpt_answer, student_answer, previous_explana
         print("Student questioning section has been completed.\nNext: Metric scores for performance\n")
 
 
-# In[15]:
+# In[14]:
 
 
 # question = "Solve for x: 2x + 5 = 15"
@@ -467,17 +417,34 @@ def student_clarification(question, gpt_answer, student_answer, previous_explana
 # student_clarification(question, gpt_answer, student_answer, previous_explanations)
 
 
-# In[16]:
+# In[15]:
 
 
 # gpt_res: evaluation on how the student answered the questions
-def extract_metrics_scores(gpt_res): #TODO fix extract_metric scores, the response uses "scores"
+#TODO add questions to examples and json
+#TODO change how I store mistakes
+#TODO add if the answer is correct
+#TODO figure out eval() error from GPT not formatting JSON correctly
+def extract_metrics_scores(gpt_res):
+    # print(gpt_res)
     instruction = f'''
 
 
     Here is the Evaluation for a certain student. \n\n{gpt_res}\n\n---\n.
 
-    From this evaluation, extract it's evaluation metric numbers and put them in teh shape of a JSON file. 
+    From this evaluation, extract it's evaluation metric numbers and put them in teh shape of a JSON file.  
+    - question
+    - subtopic name
+    - level
+    - communication
+    - computation
+    - conceptual
+    - interpretation
+    - mistakes (NOT an array, this should just be one single string, with each mistake separated by commas)
+    - overall_avg
+    - time (score and seconds)
+    
+    Also Include the question asked
     
     Answer this question in the form of a JSON file.
     
@@ -486,13 +453,22 @@ def extract_metrics_scores(gpt_res): #TODO fix extract_metric scores, the respon
      - 'json', 
      - '```', 
      - <string>, etc. 
-
-
+     DONT FORGET TO 
+     - use commas when necessary
+     - MAKE SURE JSON is formatted perfectly, such that I can use eval.
+     
+     Look at the 2 examples provided below. For each one...
+     - I first give sample input
+     - I then give you what you should output. Notice that the output has perfect Format for creating a JSON
 '''
-    # get examples of what should be done.
+    # example input
     example_1_eval = """
         Evaluation of Allan's Performance:
-
+        
+        Question: Add the following numbers: find x: 3x + 4 = 31
+        Subtopic: Basic Algebra
+        Level: 3
+        
         1. Communication: 4/5
            - Allan effectively communicated his answer and explanation in a clear and concise manner. However, there could have been more elaboration and clarity in his explanation.
 
@@ -513,65 +489,41 @@ def extract_metrics_scores(gpt_res): #TODO fix extract_metric scores, the respon
         Explanation:
         Allan's performance was generally strong across all skill metrics. He effectively communicated his answer and demonstrated a good understanding of the concept. However, his explanation could have been more detailed and comprehensive, which affected his score in the communication and conceptual understanding categories. Overall, Allan performed well and achieved a high average score of 4.6 out of 5.
         """
-    # What the function should output
-    # TODO: if you are having issues with example_1_res, use the OLD version here
-    example_1_res_OLD = """
-        {
-                {
-        "overall_avg": 4.6,
-        "communication": {
-            "avg_score": 4,
-            "related_mistakes": ["could have been more elaboration and clarity in his explanation."]
-        },
-        "interpretation": {
-            "avg_score": 5,
-            "related_mistakes": []
-        },
-        "computation": {
-            "avg_score": 5,
-            "related_mistakes": []
-        },
-        "conceptual": {
-            "avg_score": 4,
-            "related_mistakes": ["explanation could have included more conceptual details to further enhance his understanding"]
-        },
-        "time": {
-            "avg_score": 5,
-            "seconds": 20
-        }
-    }
-    }
-    """
-    # What the function should output
-    example_1_res = '''
-                {
-        "overall_avg": 4.6,
-        "communication": {
-            "score": 4,
-            "related_mistakes": ["could have been more elaboration and clarity in his explanation."]
-        },
-        "interpretation": {
-            "score: 5,
-            "related_mistakes": []
-        },
-        "computation": {
-            "score: 5,
-            "related_mistakes": []
-        },
-        "conceptual": {
-            "score: 4,
-            "related_mistakes": ["explanation could have included more conceptual details to further enhance his understanding"]
-        },
-        "time": {
-            "score: 5,
-            "seconds": 20
-        }
-    }
-    '''
+    # example output #TODO figure out what you are going to send back (make diagram?)
+    example_1_res = """{ 
+    "question": "find x: 3x + 4 = 31",
+    "subtopic":  "basic algebra",
+    "level": 3,
+    "overall_avg": 4.6,
+    "communication": {
+        "score": 4
+    },
+    "interpretation": {
+        "score": 5
+    },
+    "computation": {
+        "score": 5
+    },
+    "conceptual": {
+        "score": 4
+    },
+    "time": {
+        "score": 5,
+        "seconds": 20
+    },
+    "mistakes": 
+        "could have been more elaboration and clarity in his explanation,
+        explanation could have included more conceptual details to further enhance his understanding"
+    
+}"""
 
     example_2_eval = """
         Evaluation of Alice's Performance:
 
+    Question: A bakery has 86 cupcakes. They sell 59 cupcakes. How many cupcakes do they have left? Solve this without regrouping (borrowing). Show your work.
+
+    Level 2
+    
     1. Communication: 2/5
        - Alice's answer does not clearly explain the steps taken to subtract the numbers.
        - The answer provided is incorrect and does not demonstrate a clear understanding of the subtraction process.
@@ -596,51 +548,89 @@ def extract_metrics_scores(gpt_res): #TODO fix extract_metric scores, the respon
     Explanation:
     Alice's performance in this question is below average. She struggled with communication, interpretation, computation, and conceptual understanding. Her answer was incorrect, and she did not follow the correct method of subtraction without regrouping. Alice needs further practice and clarification on the concept of subtraction to improve her skills in this area.
     """
-    example_2_res = """
-        {
-            "overall_avg": 2,
-            "communication": {
-                "score": 2,
-                "related_mistakes": [" does not clearly explain the steps taken to subtract the numbers."]
-            },
-            "interpretation": {
-                "score": 1,
-                "related_mistakes": [misinterpreted the question and did not understand that regrouping (borrowing) was not allowed,The answer provided does not align with the given instructions.]
-            },
-            "computation": {
-                "score": 1,
-                "related_mistakes": [does not follow the correct method of subtraction without regrouping.]
-            },
-            "conceptual": {
-                "score": 1,
-                "related_mistakes": ["lacks a clear understanding of the concept of subtraction without regrouping"]
-            },
-            "time": {
-                "score": 5,
-                "seconds": 20
-            }
-    }
+    # mistakes string separates separate mistakes with commas, NOT an array
+    example_2_res = """ {
+        "question": "A bakery has 86 cupcakes. They sell 59 cupcakes. How many cupcakes do they have left? Solve this without regrouping (borrowing). Show your work.",
+        "subtopic": "word problem without regrouping",
+        "level": 2,
+        "overall_avg": 2,
+        "communication": {
+            "score": 2,
+        },
+        "interpretation": {
+            "score": 1,
+        },
+        "computation": {
+            "score": 1,
+        },
+        "conceptual": {
+            "score": 1,
+        },
+        "time": {
+            "score": 5,
+            "seconds": 23
+        },
+        "mistakes":
+        "does not clearly explain the steps taken to subtract the numbers,
+        misinterpreted the question and did not understand that regrouping (borrowing) was not allowed,
+        The answer provided does not align with the given instructions,
+        does not follow the correct method of subtraction without regrouping,
+        lacks a clear understanding of the concept of subtraction without regrouping"
+        }
     """
-    instruction_msg = create_message_part(instruction,1)
-    example_1_res_msg =  create_message_part(example_1_eval,3)
-    example_1_res_ans =  create_message_part(example_1_res,2)
-    example_2_res_msg =  create_message_part(example_2_eval,3)
-    example_2_res_ans =  create_message_part(example_2_res,2)
+    instruction_msg = create_message_part(instruction, 1)
+    example_1_res_msg = create_message_part(example_1_eval, 3)
+    example_1_res_ans = create_message_part(example_1_res, 2)
+    example_2_res_msg = create_message_part(example_2_eval, 3)
+    example_2_res_ans = create_message_part(example_2_res, 2)
 
     # add instructions and examples to messages
-    messages = [instruction_msg, example_1_res_msg, example_1_res_ans,example_2_res_msg,example_2_res_ans]
+    messages = [instruction_msg, example_1_res_msg, example_1_res_ans, example_2_res_msg, example_2_res_ans]
 
     # get JSON data in form of response string
-    metric_scores_string = get_response_text_w_temp(messages,0) # temp  = 0
+    metric_scores_string = get_response_text_w_temp(messages, 0.3)  # temp  = 0.3
 
+    return metric_scores_string
     # make the string a JSON
-    # print(f"\nMetrics_scores_string {metric_scores_string} \n")
+    # if this fails make this try again for a max of 3 attempts. 
+    # if it fails for a 4th time exit the function with an error
 
-    metric_scores_json = eval(metric_scores_string)
-    return metric_scores_json
+    # metric_scores_json = eval(metric_scores_string)
+    # return metric_scores_json
 
-    # # print(metric_scores_json)
-    # return metric_scores_string
+
+
+# In[16]:
+
+
+s = """{
+    "question": "find x: 3x + 4 = 31",
+    "subtopic":  "basic algebra",
+    "level": 5,
+    "overall_avg": 4.6,
+    "communication": {
+        "score": 4
+    },
+    "interpretation": {
+        "score": 5
+    },
+    "computation": {
+        "score": 5
+    },
+    "conceptual": {
+        "score": 4
+    },
+    "time": {
+        "score": 5,
+        "seconds": 20
+    },
+    "mistakes": [
+        "could have been more elaboration and clarity in his explanation",
+        "explanation could have included more conceptual details to further enhance his understanding"
+    ]
+}"""
+sj = eval(s)
+sj["question"]
 
 
 # In[17]:
@@ -666,21 +656,36 @@ def receive_respond_and_update(question, student, sub_topic, all_student_subtopi
     student_clarification(question,answer_res,student_answer,previous_explanations)
     gpt_res = grade_student_response(question, student_answer, student.name, solve_time, sub_topic.name,answer_res)
 
-    # Extract metric updates from the GPT response
-    metric_updates = extract_metrics_scores(gpt_res)
-
-    # Return the metric updates
-    return metric_updates
 
 
-# In[41]:
+    max_eval_attempts = 10 # if GPT messes up json format, it can try another 9 times
+    for attempt in range(max_eval_attempts):
+        try:
+            # Extract metric updates from the GPT response
+            metric_updates_string = extract_metrics_scores(gpt_res)
+            metric_updates = eval(metric_updates_string) # string --> json
+            # Return the metric updates
+            return metric_updates
+        except (json.JSONDecodeError, SyntaxError) as e:
+            if attempt == max_eval_attempts - 1:
+                raise ValueError(f"Failed to parse metric scores JSON after {max_eval_attempts} attempts: {e}") 
+            else:
+                print(f"Warning: Failed to parse metric scores JSON on attempt {attempt+1}. Retrying...")
+
+    # Should not reach here if attempts are successful  
+    return None
+   
+    
+
+
+# In[18]:
 
 
 #TODO make a test portion
 #TODO Evaluating AI/Student's Answer to question
 
 
-# In[22]:
+# In[19]:
 
 
 # converts question's format into python formatting
@@ -721,11 +726,11 @@ def backtrack_to_explanation(question, answer):
 
     messages = [system_msg,prompt_msg]
     explanation = get_response_text(messages)
-    print(explanation)
+    # print(explanation)
     return explanation
 
 
-# In[23]:
+# In[20]:
 
 
 #### TRYING TO run python code to get question right
@@ -817,7 +822,7 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 
 
 
-# In[24]:
+# In[21]:
 
 
 q1 = "What is 0.96**5"
@@ -838,30 +843,26 @@ Calculate the total cost of buying each cup.
 
 
 
-# 
-# 
-
-# In[25]:
+# In[22]:
 
 
 # 0.96**5
 
 
-# In[26]:
+# In[23]:
 
 
 # query = "Calculate the area of a rectangle with length 5 and width 8."
-# Memory.find_most_similar_memory(query)
+# memory.find_most_similar_memory(query)
 
 
-# In[27]:
+# In[24]:
 
 
 # creates prompt with question and feedback if it exists
 def create_prompt(question, feedback):
     # make the question and feedback into one prompt
     question_msg = create_message_part(question,3)
-
     set_up_msg = "user feedback:"
     prepare_for_feedback = create_message_part(set_up_msg,3)
 
@@ -878,29 +879,23 @@ def create_prompt(question, feedback):
 
 def get_answer_from_explanation(explained_ans):
     instruction = "From the given explanation, give only the question solved and the answer given"
-
     instruction_msg = create_message_part(instruction,1)
-
     explained_ans_msg = create_message_part(explained_ans,3)
 
     msgs = [instruction_msg,explained_ans_msg]
-
     ans = get_response_text(msgs)
-
     return ans
 
 # splits up explained answer into two parts: The answer itself and the explanation that leads to the answer
 def get_answer_and_explanation(prompt):
-
     # generate the explained answer
     explanation = get_response_text(prompt)
     answer = get_answer_from_explanation(explanation)
     return explanation, answer
 
-
 # give user feedback to perosn
 def send_feedback(question, feedback):
-    # get the Memory.json data
+    # get the memory.json data
     data = get_ext_data(memory_path)
     # Search for the question in the database
     found_question = False
@@ -923,10 +918,10 @@ def send_feedback(question, feedback):
         data.append(new_entry)
         print("the question and the feedback has been added to memory")
 
-    # print("Memory database has been updated")
+    # print("memory database has been updated")
 
 
-    # update the Memory.json file with the new information
+    # update the memory.json file with the new information
     post_ext_data(data,memory_path)
 
 # will update the memory if the user spots a mistake that GPT has made in the answer and/or the explanation of the answer
@@ -937,19 +932,19 @@ def update_memory(question, answer, explanation):
     need_feedback = input("does the answer and explanation above require any feedback: 'Yes', or 'No'")
     if need_feedback == 'Yes':
         feedback = input("What needs to be improved in the analysis process?")
-        memories0 = Memory.Memories() # creates Memories Object
+        memories0 = memory.Memories() # creates Memories Object
         memories0.update_memory_feedback(question, feedback)
     else:
-        print("Memory will not be updated")
+        print("memory will not be updated")
 
 
-# In[28]:
+# In[25]:
 
 
 # GPT answser the question with the feedback memory json
 def get_answer_explanation_with_memory(question):
     # get the feedback associated with the most similar question
-    _,similar_feedback = Memory.find_most_similar_memory(question)
+    _,similar_feedback = memory.find_most_similar_memory(question)
     # convert the list to a string
     feedback_str = f"{similar_feedback}"
     # print(type(feedback_str))
@@ -962,19 +957,17 @@ def get_answer_explanation_with_memory(question):
     return ans_explanation,answer
 
 
-# In[29]:
+# In[26]:
 
 
-# based off "MemPrompt: Memory-assisted Prompt Editing with User Feedback" paper
+# based off "MemPrompt: memory-assisted Prompt Editing with User Feedback" paper
 def mem_prompt_learning():
     sub_topic_name = input("Enter the sub-topic you want to learn: ")
     user_type = "trainer"
-
     # make subtopic and studnet objects we will use just for training
     # nothing will chagne in teh students database collection on MongoDB
     sub_topic_placeholder = students.Subtopic(sub_topic_name,1)
     student_placeholder = students.Student("trainer",1) # placeholder for a student's name. This will NOT negatively affect the ask_question function
-
     # get the question
     question = ask_question(student_placeholder,sub_topic_placeholder,user_type)
     # find the question, or the most similar question that's in the database already
@@ -982,12 +975,10 @@ def mem_prompt_learning():
     explanation, answer = get_answer_explanation_with_memory(question)
 
     # update the memory.json file ( if the answer is already correct, then nothing in the database will change)
-
     update_memory(question, answer, explanation)
 
     # Ask the student if they want to be asked another question.
     answer = input("Do you want another question? 'yes' or 'no' ")
-
     answer = answer.lower()
     while answer not in ("yes", "no"):
         answer = input("Invalid input: Please enter 'yes' or 'no': ")
@@ -998,25 +989,25 @@ def mem_prompt_learning():
         print("Thank you training GPT Tutor! Have a great day.")
 
 
-# In[30]:
-
+# In[27]:
 
 
 # asks student question, evaluates and updates their database
 def student_learning():
-
     user_type = "user"
     # get students database collection from MongoDB
     main_collection = "Section0"
-    StudentCollection = students.StudentsCollection(main_collection)
+    # students.py is an import
+    StudentCollection = students.StudentsCollection(main_collection) 
     all_student_names = StudentCollection.current_student_names()
 
 
     """Asks the student a question and updates their stats."""
     full_name = input("Enter your full name (Example: John Doe): ")
-    grade_level = input("What grade are you in (Grade 1-12): ")
+    # grade_level = input("What grade are you in (Grade 1-12): ") # 
     sub_topic_name = input("Enter the sub-topic you want to learn: ")
 
+    print()
     # if student is in database, get the object
     if full_name in all_student_names:
         print(f"{full_name} is already in the database")
@@ -1024,52 +1015,56 @@ def student_learning():
     else:
         # if the student is not in the database, create the object
         print(f"{full_name} will be added to the database")
-        student = students.Student(full_name,float(grade_level)) # initialize student
+        student = students.Student(full_name) # initialize student
 
-
-    mistakes = [] # initialize mistakes array for student
+    
+    mistakes = student.mistakes # initialize mistakes array for student [question, mistake]
+    print("The student's name",student.name)
+    print("The student's subtopics",student.subtopics)
+    print("The student's mistakes",student.mistakes)
     # find out if the has data related to the subtopic
-    if sub_topic_name in student.current_subtopic_names():
-        sub_topic = student.get_subtopic(sub_topic_name)
-    else:
-        sub_topic = students.Subtopic(sub_topic_name,1)
+    # print(student.current_subtopic_names())
+    print()
+    # sub_topic = None
+    if student.current_subtopic_names(): # if current/student_names != NULL
+        if sub_topic_name in student.current_subtopic_names():
+            sub_topic = student.get_subtopic(sub_topic_name)
+        else:
+            sub_topic = students.Subtopic(sub_topic_name)
+            student.add_subtopic(sub_topic)
+            sub_topic = student.get_subtopic(sub_topic_name)
+    else: # If student has no subtopics
+        sub_topic = students.Subtopic(sub_topic_name)
         # connect subtopic object  to student object
         student.add_subtopic(sub_topic)
         sub_topic = student.get_subtopic(sub_topic_name)
-
         # find all student's old mistakes for subtopic
-        mistakes = sub_topic.metrics.get_all_mistakes()
+        # mistakes = sub_topic.metrics.get_all_mistakes()
         # mistakes is a map with the following keys: communication, interpretation, computation, and conceptual
-
+    print(sub_topic.name)
     # ask the student a question
     question = ask_question(student.name, sub_topic, user_type)
-
     # print(question)
-
     # receive answer,  calculate GPT answer, have a chance for the student to ask questions, evaluate student
     metric_updates = receive_respond_and_update(question, student, sub_topic, mistakes)
-
+    # print(json.dumps(metric_updates, indent=2, sort_keys=True)) # print json
     # return metric_updates
-    # # update the database
-    #
+    # # update the database's subtopic data
     sub_topic.update_subtopic(metric_updates)
-
+    # add the json mistakes update
+    print(f"\n\n student mistakes: {student.mistakes} ")
+    student.add_mistakes(metric_updates)
     # remove old object and add new object ( updates object if it already is in database)
     if student.name in all_student_names:
         StudentCollection.delete_student(student)
-
     StudentCollection.add_student(student)
-    #
+    # 
     # StudentCollection
-
     # Ask the student if they want to be asked another question.
     answer = input("Do you want another question? 'yes' or 'no' ")
-
     answer = answer.lower() # make the 'Yes' or 'No' lowercase
-
     while answer not in ("yes", "no"):
         answer = input("Invalid input; Please enter 'yes' or 'no': ")
-
     if answer == "yes":
         student_learning()
     else:
@@ -1077,8 +1072,7 @@ def student_learning():
 
 
 
-
-# In[31]:
+# In[28]:
 
 
 def main():
@@ -1088,25 +1082,23 @@ def main():
     """
     # User: Uses GPT_Tutor to learn math
     # Trainer: Testing GPT_Tutors knowledge ( ~ to MemPrompt paper)
-
     valid = False # valid if you enter either 'user' or 'trainer'
     while not valid:
-        usage_type = input("Type 'user' if you use GPT to learn. \nType 'trainer' if you want to train GPT_Tutor.\nType 'exit' to exit the program\n")
-
+        usage_type = input("Type 'user' or `1` if you use GPT to learn. \nType 'trainer' or `2` if you want to train GPT_Tutor.\nType anything else to exit the program\n")
         usage_type = usage_type.lower() # makes sure letters are in lowercase
-
-        if usage_type == "user":
+        if usage_type == "user" or usage_type == "1":
             valid = True
             # Start the learning process.
             student_learning()
-
-        if usage_type == "trainer":
+        elif usage_type == "trainer" or usage_type == "2":
             valid = True
             # Start GPT learning process
             mem_prompt_learning()
-        if usage_type == "exit":
+        else :
             valid = True
-# In[32]:
+
+
+# In[30]:
 
 
 # Check if the script is being run directly
@@ -1114,16 +1106,4 @@ if __name__ == "__main__":
     main()
 
 
-# In[45]:
 
-
-# grade_student_response("What is 99 * 99", "99 * 99 = 9801","Alice",20, "basic arithmetic", "the answer is 9801")
-
-
-# In[437]:
-
-
-# student_learning()
-
-
-#%%
