@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[80]:
+# In[5]:
 
 
 import json
@@ -9,7 +9,7 @@ import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
 
 
-# In[81]:
+# In[6]:
 
 
 # constants
@@ -17,14 +17,14 @@ from database_connect import client # gets MongoDB client, which gives access to
 main_collection = "Section0"
 
 
-# In[82]:
+# In[7]:
 
 
 # examples for visualizing jsons
 # format of 'all_updates':
 
 
-# In[18]:
+# In[80]:
 
 
 # recursively create JSON
@@ -42,39 +42,46 @@ def obj_to_dict(obj):
 # converts dictionary into student object
 def dict_to_student(dict_data):
     # print(dict_data)
-
     # Initialize student Object
-    student = Student(dict_data['name'], dict_data['grade'])
-
+    student = Student(dict_data['name'])
     # Initialize and fill subtopics
     for subtopic_data in dict_data['subtopics']:
-        subtopic = Subtopic(subtopic_data['name'], subtopic_data['level'])
-        subtopic.num_questions_answered = subtopic_data['num_questions_answered']
+        subtopic = Subtopic(subtopic_data['name'])  # create Subtopic Object
 
-        metrics_data = subtopic_data['metrics']
-        metrics = Metrics()
+        # Fill in metrics data
+        metrics_map_data = subtopic_data['metrics_map']
+        for level, metrics_data in metrics_map_data.items(): # level is the key to the hashmap
+            metrics_obj = Metrics()  # Create Metrics object for this level
+            # print(metrics_data.keys())
 
-        for metric_name, metric_data in metrics_data.items():
-            metric = Metric()
-            metric.avg_score = metric_data['avg_score']
-            metric.previous_scores = metric_data['previous_scores']
+            # make metric object references
+            overall_avg_obj = metrics_obj.overall_avg
+            communication_obj = metrics_obj.communication
+            interpretation_obj = metrics_obj.interpretation
+            computation_obj = metrics_obj.computation
+            conceptual_obj = metrics_obj.conceptual
+            time_obj = metrics_obj.time
 
-            if 'avg_time' in metric_data:
-                metric.avg_time = metric_data['avg_time']
-            if 'recent_times' in metric_data:
-                metric.recent_times = metric_data['recent_times']
-            if 'related_mistakes' in metric_data:
-                metric.related_mistakes = metric_data['related_mistakes']
+            # update all metric objects
+            for metric in [ overall_avg_obj, communication_obj,interpretation_obj,computation_obj, conceptual_obj, time_obj]:
+                metric_type = metric.metric_type # eg. communication
+                metric_json = metrics_data[metric_type]
+                metric.avg_score = metric_json["avg_score"]
+                metric.previous_scores = metric_json["previous_scores"]
+                metric.num_questions = metric_json["num_questions"]
+                if metric_type == "time":
+                    metric.avg_time = metric_json["avg_time"]
+                    metric.recent_times = metric_json["recent_times"]
+            # metrics_obj.update(metrics_info)  # Update metrics
+            subtopic.metrics_map[level] = metrics_obj
 
-            setattr(metrics, metric_name, metric)
+        student.add_subtopic(subtopic)
+    student.mistakes = dict_data["mistakes"]
 
-        subtopic.metrics = metrics
-        student.subtopics.append(subtopic)
-
-    return student
+    return student  # Return the completed student object
 
 
-# In[19]:
+# In[28]:
 
 
 class StudentsCollection:
@@ -85,7 +92,6 @@ class StudentsCollection:
     def add_student(self,student):
         # make student into dictionary format
         student_dict = student.in_dict_format()
-        print(student_dict)
         self.collection.insert_one(student_dict)
         print(f"{student.name} has been added to collection: {self.name}")
     # takes in student's name
@@ -116,15 +122,15 @@ class StudentsCollection:
         student_data = list(self.collection.find())
 
         for datam in student_data:
-
             student_names.append(datam["name"])
         return student_names
+    
 class Student:
-    def __init__(self,name, grade: float):
+    def __init__(self,name):
         self.name = name
-        self.grade = grade
+        # self.grade = grade
         self.subtopics = [] # array of Subtopic objects
-        self.mistakes = np.empty(shape=(0,2)) # init as 0 x 2 array (Question, Mistakes) #TODO later add is_student_answer_correct
+        self.mistakes = np.empty((0, 2)) # init as 0 x 2 array (Question, Mistakes) #TODO later add is_student_answer_correct
 
     def in_dict_format(self):
         return obj_to_dict(self)
@@ -136,7 +142,7 @@ class Student:
             return []
 
     def get_subtopic(self,subtopic_name):
-        for i,name in enumerate(self.current_subtopic_names()):
+        for i, name in enumerate(self.current_subtopic_names()):
             if name == subtopic_name:
                 print(f" {subtopic_name} is already in {self.name}'s database")
                 return self.subtopics[i]
@@ -147,16 +153,19 @@ class Student:
     def add_subtopic(self,subtopic):
         return self.subtopics.append(subtopic)
 
+    # adds array (question, mistake) to student's data
     def add_mistakes(self, all_updates):
         question = all_updates["question"]
         mistakes = all_updates["mistakes"]
         # Assuming mistakes is a list, add them individually
-        for mistake in mistakes:
-            question_mistake_row = np.array([question, mistake])  # Shape: (2, )
-            self.mistakes = np.append(self.mistakes, [question_mistake_row])  # Add within a list to preserve shape
+        # print(f"question: {question}\n\n mistakes: {mistakes}")
+        # for mistake in mistakes:
+        row = np.array([question, mistakes])  # Shape: (2, )
+        self.mistakes = np.vstack((self.mistakes, row))  # Add within a list to preserve shape
+        self.mistakes = self.mistakes.tolist() # np --> list
 
 
-# In[20]:
+# In[29]:
 
 
 # SC = StudentsCollection()
@@ -164,11 +173,17 @@ class Student:
 # Alice.current_subtopic_names()
 
 
-# In[86]:
+# In[29]:
+
+
+
+
+
+# In[30]:
 
 
 class Subtopic:
-    def __init__(self, name, level = 1):
+    def __init__(self, name):
         # how many questions you answered for each of the 5 levels of a topic
         self.name = name
         self.metrics_map = {} #Hashmap of metrics (key: level, value: Metrics Object) 
@@ -194,16 +209,16 @@ class Subtopic:
         return subtopic_json  # Return the JSON string with indentation
 
 
-# In[87]:
+# In[61]:
 
 
 class Metrics:
     def __init__(self):
         self.overall_avg = Metric("overall_avg")
-        self.communication = Metric()
-        self.interpretation = Metric()
-        self.computation = Metric()
-        self.conceptual = Metric()
+        self.communication = Metric("communication")
+        self.interpretation = Metric("interpretation")
+        self.computation = Metric("computation")
+        self.conceptual = Metric("conceptual")
         self.time = Metric("time")
 
     # returns dictionary of mistakes
@@ -248,13 +263,14 @@ class Metrics:
         return metrics_json
 
 
-# In[88]:
+# In[65]:
 
 
 class Metric:
     # special types: time, overall_avg
     # order of recent_times and related mistakes (oldest..... newest)
     def __init__(self, metric_type = None):
+        self.metric_type = metric_type
         self.avg_score = 0
         self.previous_scores = []
         self.num_questions = 0      # total number of questions asked
@@ -291,61 +307,15 @@ class Metric:
     def to_json(self):
         metric_json = {
             "avg_score": self.avg_score,
-            # "previous_scores": self.previous_scores
+            "previous_scores": self.previous_scores,
             "num_questions": self.num_questions
         }
         if hasattr(self, "avg_time"):
             metric_json["avg_time"] = self.avg_time
             metric_json["recent_times"] = self.recent_times
+        # if not hasattr(self,"overall_avg"):
+        #     metric_json["previous_scores"]: self.previous_scores
         # elif hasattr(self, "related_mistakes"):
         #     metric_json["related_mistakes"] = self.related_mistakes
 
         return metric_json
-    
-
-
-# In[94]:
-
-
-# student_data_import_json_1 = {
-#     "communication": {
-#         "score": 2
-#     },
-#     "computation": {
-#         "score": 1
-#     },
-#     "conceptual": {
-#         "score": 1
-#     },
-#     "interpretation": {
-#         "score": 1
-#     },
-#     "mistakes": [
-#         "does not clearly explain the steps taken to subtract the numbers.",
-#         "misinterpreted the question and did not understand that regrouping (borrowing) was not allowed,The answer provided does not align with the given instructions.",
-#         "does not follow the correct method of subtraction without regrouping.",
-#         "lacks a clear understanding of the concept of subtraction without regrouping"
-#     ],
-#     "overall_avg": 2,
-#     "question": "A bakery has 86 cupcakes. They sell 59 cupcakes. How many cupcakes do they have left? Solve this without regrouping (borrowing). Show your work.",
-#     "time": {
-#         "score": 5,
-#         "seconds": 23
-#     },
-#      "level": 5
-# }
-
-
-# In[95]:
-
-
-# sub1 = Subtopic(" basic addition", 1)
-# sub1.update_subtopic(student_data_import_json_1)
-# sub1.to_json()
-
-
-# 
-
-#%%
-
-#%%
