@@ -277,16 +277,30 @@ class Metric:
         if metric_type == "time":
             self.avg_time = None
             self.recent_times = []
+
     # updates metrics given json of new data
     # NOT USED to update overall_avg ( can only be updated in "Metrics" object
     # update: JSON
     # returns average score for metric
+    #TODO figure out `TypeError: 'int' object is not subscriptable` error
     def update(self, update):
         # update num_questions
         self.num_questions += 1
         # get metrics previous scores and add new score,
         prev_scores = self.previous_scores
-        prev_scores.append(update["score"])
+
+        # prev_scores.append(update["score"])
+        # attempt to add the update to the previous score
+        try:
+            prev_scores.append(update["score"]) # appending the score
+        except (KeyError, TypeError) as e:
+            # Handle the potential errors
+            print(f"Error appending score: {e}\n")
+            print("--------------------------------------------------------")
+            print(update)
+            print("--------------------------------------------------------")
+            return -1
+
         # remove oldest score
         if len(prev_scores) == 6:
             prev_scores.pop(0)
