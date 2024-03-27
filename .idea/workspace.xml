@@ -5,14 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="331376f1-0107-4f8d-b567-f90db61ebde5" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/neural_exploration/data_preprocessing.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/command_line_toy/learning.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/learning.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/command_line_toy/learning.py" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/learning.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/neural_exploration/NeuralUCB.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/neural_exploration/NeuralUCB.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Jupyter Notebook" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -34,6 +41,7 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/caleb/Programming Projects/WPI Projects/GPT_Toy_Tutor&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
@@ -49,6 +57,7 @@
       <recent name="C:\Users\caleb\Programming Projects\WPI Projects\GPT_Toy_Tutor" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\caleb\Programming Projects\WPI Projects\GPT_Toy_Tutor\data\preprocessed" />
       <recent name="C:\Users\caleb\Programming Projects\WPI Projects\GPT_Toy_Tutor\command_line_toy" />
       <recent name="C:\Users\caleb\Programming Projects\WPI Projects\GPT_Toy_Tutor\potential_front_end" />
     </key>
