@@ -1216,11 +1216,11 @@ John D performed well in communication, interpretation, and time management. How
 # In[ ]:
 
 
-a = 0
-while(True):
-    print(a)
-    a +=1
-    extract_metrics_scores(asd)
+# a = 0
+# while(True):
+#     print(a)
+#     a +=1
+#     extract_metrics_scores(asd)
 
 
 # In[ ]:
