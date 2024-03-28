@@ -46,7 +46,7 @@ def dict_to_student(dict_data):
     student = Student(dict_data['name'])
     # Initialize and fill subtopics
     for subtopic_data in dict_data['subtopics']:
-        subtopic = Subtopic(subtopic_data['name'])  # create Subtopic Object
+        subtopic = Subtopic(subtopic_data['name'], subtopic_data["grade"], subtopic_data["education_lvl"],subtopic_data["topic_name"])  # create Subtopic Object
 
         # Fill in metrics data
         metrics_map_data = subtopic_data['metrics_map']
@@ -79,7 +79,6 @@ def dict_to_student(dict_data):
     student.mistakes = dict_data["mistakes"]
 
     return student  # Return the completed student object
-
 
 # In[28]:
 
@@ -124,7 +123,7 @@ class StudentsCollection:
         for datam in student_data:
             student_names.append(datam["name"])
         return student_names
-    
+
 class Student:
     def __init__(self,name):
         self.name = name
@@ -134,22 +133,23 @@ class Student:
 
     def in_dict_format(self):
         return obj_to_dict(self)
-    
-    def current_subtopic_names(self):
-        if not len (self.subtopics) == 0:
-            return list(map(lambda subtopic: subtopic.name, self.subtopics))
-        else: 
+
+    def current_subtopic_ids(self):
+        if not len(self.subtopics) == 0:
+            return list(map(lambda subtopic: subtopic.id, self.subtopics))
+        else:
             return []
 
-    def get_subtopic(self,subtopic_name):
-        for i, name in enumerate(self.current_subtopic_names()):
-            if name == subtopic_name:
-                print(f" {subtopic_name} is already in {self.name}'s database")
+    # gets the subtopic
+    def get_subtopic(self, subtopic_id):
+        for i, id in enumerate(self.current_subtopic_ids()):
+            if id == subtopic_id:
+                print(f"The subtopic is already in {self.name}'s database")
                 return self.subtopics[i]
         # if name not found
-        print(f"{subtopic_name} not found in database, so it will be created")
-        subtopic = Subtopic(subtopic_name,1)
-        return subtopic
+        print(f"{subtopic_id} not found in database, so it will be created")
+        # subtopic = Subtopic(subtopic_name,1)
+        # return subtopic
     def add_subtopic(self,subtopic):
         return self.subtopics.append(subtopic)
 
@@ -183,26 +183,36 @@ class Student:
 
 
 class Subtopic:
-    def __init__(self, name):
+    def __init__(self, name, grade, education, topic_name):
         # how many questions you answered for each of the 5 levels of a topic
-        self.name = name
-        self.metrics_map = {} #Hashmap of metrics (key: level, value: Metrics Object) 
-    # all_updates: string or json or dictionary: updates that need to be done for metrics 
+        self.name = name # subtopic name
+        self.grade = grade
+        self.education_lvl = education
+        self.topic_name = topic_name # the subtopic is a subset of the overall topic
+        self.id = f"{grade}|{education}|{topic_name}|{name}"
+        self.metrics_map = {} # Hashmap of metrics (key: level, value: Metrics Object)
+    # all_updates: string or json or dictionary: updates that need to be done for metrics
     def update_subtopic(self, all_updates):
         # update the metrics
         # find hashmap value/metrics object that corresponds to the level/key
         key = all_updates["level"]
-        if not self.metrics_map.get(key, None): # if None, 
+        if not self.metrics_map.get(key, None): # if None,
             # add default Metrics object if isn't one in the map at the key
             self.metrics_map[key] = Metrics()
         metrics_to_update = self.metrics_map[key]
         metrics_to_update.update(all_updates)
     # returns and prints subtopic data in a json
     def to_json(self):
-        subtopic_json = {"name": self.name, "metrics": {}}  
-        #add all related metrics by level
+        subtopic_json = {
+            "name": self.name,
+            "grade": self.grade,  # Include grade
+            "education_lvl": self.education_lvl,  # Include education level
+            "topic_name": self.topic_name,  # Include topic name
+            "metrics_map": {}
+        }
+        # add all related metrics by level
         for level, metrics in self.metrics_map.items():
-            subtopic_json["metrics"][level] = metrics.to_json() 
+            subtopic_json["metrics_map"][level] = metrics.to_json()
 
         subtopic_json = json.dumps(subtopic_json, indent=2)
         # print(subtopic_json)
@@ -333,3 +343,5 @@ class Metric:
         #     metric_json["related_mistakes"] = self.related_mistakes
 
         return metric_json
+
+#%%

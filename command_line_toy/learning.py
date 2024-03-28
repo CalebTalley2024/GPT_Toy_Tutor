@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[33]:
 
 
 from dotenv import load_dotenv
@@ -16,18 +16,10 @@ import memory
 import students
 
 
-# In[3]:
+# In[34]:
 
 
-# get syllabus
-# df1 = pd.read_csv('topics.csv')
-df2 = pd.read_csv('../data/GPT_tutor_topics(sub_topics_included).csv')
-# df2
-
-
-# In[4]:
-
-
+# df = pd.read_csv('../data/GPT_tutor_topics(subtopics_included).csv')
 load_dotenv()
 # get key and model
 openai.api_key = os.getenv('OPENAI_KEY_1')
@@ -36,9 +28,89 @@ model_35 = "gpt-3.5-turbo"
 student_data_path = "../data/students.json"
 memory_path = "../data/memory.json"
 question_temp = 1 # temp has to be between 0 and 2
+math_df_path = '../data/GPT_tutor_topics(subtopics_included).csv'
+# df = pd.read_csv(math_df_path)
 
 
-# In[5]:
+# In[38]:
+
+
+# takes in path
+# outputs (grade, education, topic, subtopic)
+def get_subtopic_math_data(path = math_df_path):
+    # math_df: dataframe with grade, education level, topic and subtopics
+    math_df = pd.read_csv(path)
+    grade = input("What grade are you in (Grade 1-12): ")
+    while True:  # Loop until valid grade is entered
+        if 0 <= int(grade) <= 12 or grade.upper() == 'K':
+            break  # Exit loop if grade is valid
+        elif grade == "":
+            return -1
+        else:
+            grade = input("Invalid grade. Please enter a grade between 1-12': ")
+
+    education = -1
+    # figure out educations level
+    if grade in [ "1", "2", "3", "4", "5"]:
+        education = "Elementary"
+    elif grade in ["6", "7", "8"]:
+        education = "Middle School"
+    elif grade in ["9", "10", "11", "12"]:
+        education = "High School"
+
+    print(f"grade {grade}, education: {education}")
+    
+    grade = int(grade)
+    # filter to get rows with that grade (.values converts df -> np array)
+    filt_df = math_df.loc[math_df["Grade"] == grade].values # numpy array version
+    filt_df_topics = math_df.loc[math_df["Grade"] == grade]["Math Topic"].values # numpy array version    
+
+    print(f"\nTopics for Grade {grade}, Education Level: {education}")
+    print("------------------------------------------------------------------")
+    
+    for i, topic_name in enumerate(filt_df_topics):
+        print(f"{i}: {topic_name} ")
+    topic_idx = input("Pick a topic by number: ")
+    while True:  # Loop for input validation
+        try:
+            topic_idx = int(topic_idx)
+            if 0 <= topic_idx < len(filt_df):  # Check if index is within range
+                break
+            elif topic_idx == "":
+                return -1
+            else:
+                topic_idx = input("Invalid number. Please enter a valid number from the list: ")
+        except ValueError:
+            topic_idx = input("Invalid input. Please enter a number: ")
+
+    filt_df = filt_df[topic_idx][3:] # gets the row for the corresponding topic, remove rows for grade and education
+    print(f"\nSubtopics for {topic_name}")
+    print("------------------------------------------------------------------")
+    
+    for i, subtopic_name in enumerate(filt_df): # go through columns
+        print(f"{i}: {subtopic_name} ")
+
+    subtopic_idx = input("Pick the number that matches your preferred subtopic")
+
+    while True:
+        try:
+            subtopic_idx = int(subtopic_idx)
+            if 0 <= subtopic_idx < len(filt_df): # in range
+                break
+            elif subtopic_idx == "":
+                return -2
+            else: # Error: out of range
+                input("Invalid input. Please enter a number between 0 and 4")
+
+        except ValueError: # Error: NaN
+            subtopic_idx = input("Invalid input. Please enter a number between 0 and 4")
+    # make the id token a collection of all of the math data        
+    id_token = f"{grade}|{education}|{topic_name}|{subtopic_name}"
+    
+    return grade, education, topic_name, subtopic_name, id_token
+
+
+# In[36]:
 
 
 # data helper functions for JSON data
@@ -129,12 +201,12 @@ def init_question(student, subtopic, user_type):
     valid = True
     level = -1
     while level > 5 or level < 1: # continue the loop till we have a valid level
-        level = int(input("Enter the level you want between 1 and 5: "))
+        level = int(input("Enter the question level you want between 1 and 5: "))
         if level > 5 or level < 1:
             print("Invalid level, pick again.")
                 
     # criteria: tell GPT scales for proficiency and level
-    init = f"Based on {student}'s database, the student's skill level for {subtopic.name} is {level}. Please give {student} a test question based on {subtopic.name} and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
+    init = f"Based on {student}'s database, the student's skill level for {subtopic.topic_name}, (specifically{subtopic.name}) is {level}. Please give {student} a test question based on {subtopic.topic_name}, (specifically{subtopic.name}) and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
     criteria = f"Level is on a scale between 1 and 5, where 5 is the hardest level."
 
     # combine criteria and message
@@ -187,10 +259,10 @@ def question_formatting():
 
 
 # ask question to student
-def ask_question(student, sub_topic, user_type):
+def ask_question(student, subtopic, user_type):
     # make sure to only receive math answers and initialize the questions GPT will give
     filter_subject = filter_answers()
-    filter_question = init_question(student, sub_topic,user_type)
+    filter_question = init_question(student, subtopic,user_type)
     formatting, level_meaning = question_formatting()
     messages = [filter_subject, filter_question, formatting, level_meaning]
     # print(messages)
@@ -251,7 +323,7 @@ def respond_to_student_ans(question, student_answer, student_name,gpt_ans_explan
 
     use_student_mistakes = {
         "role": "user",
-        "content": f" These are the mistakes that {student_name} made while doing these types of problems: {get_all_student_related_mistakes}. in your answer. high light how he has improved on his mistakes,and/or how he is still doing the same mistake. If the studnet does not currently have any related mistakes, dont mention anything about related mistakes"
+        "content": f" These are the mistakes that {student_name} made while doing these types of problems: {get_all_student_related_mistakes}. in your answer. highlight how he has improved on his mistakes,and/or how he is still doing the same mistake. If the student does not currently have any related mistakes, dont mention anything about related mistakes"
     }
     init_response_messages = [question_message,answer_explained,use_student_mistakes]
 
@@ -261,7 +333,7 @@ def respond_to_student_ans(question, student_answer, student_name,gpt_ans_explan
 
     return answer_res
 
-def grade_student_response(question, student_answer, student_name,solve_time, sub_topic,answer_res):
+def grade_student_response(question, student_answer, student_name,solve_time, subtopic,answer_res):
 
     print("Evaluation: \n")
     # if the question being asked is simple we want to make sure the user does not have to give an explanation if non is needed
@@ -305,7 +377,7 @@ def grade_student_response(question, student_answer, student_name,solve_time, su
     evaluation_messages = [
         {
             "role": "system",
-            "content": f"The topic of the question is {sub_topic}. This is the question given to {student_name}: {question}. {student_name}'s answer is {student_answer}. This  is the answer you gave: {answer_res}."
+            "content": f"The topic of the question is {subtopic}. This is the question given to {student_name}: {question}. {student_name}'s answer is {student_answer}. This  is the answer you gave: {answer_res}."
         },
         {
             "role": "system",
@@ -432,7 +504,7 @@ def extract_metrics_scores(gpt_res):
 
     Here is the Evaluation for a certain student. \n\n{gpt_res}\n\n---\n.
 
-    From this evaluation, extract it's evaluation metric numbers and put them in teh shape of a JSON file.  
+    From this evaluation, extract it's evaluation metric numbers and put them in the shape of a JSON file.  
     - question
     - subtopic name
     - level
@@ -637,28 +709,28 @@ sj["question"]
 
 
 # question: String
-# student, sub_topic: custom Objects
+# student, subtopic: custom Objects
 # all_student_subtopic_mistakes: dictionary
 # receive student's answer, respond to their answer, and update their statistics
-def receive_respond_and_update(question, student, sub_topic, all_student_subtopic_mistakes):
+def receive_respond_and_update(question, student, subtopic):
     # Get the student's response and the time taken
     student_answer, solve_time = get_student_timed_response()
 
-    # Grade the student's response using the given question, student response, time, and sub_topic
+    # Grade the student's response using the given question, student response, time, and subtopic
 
     # get the answer + explanation that GPT provides with python doing the math.
     # uses "memPrompt" like memory
     gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
 
-    answer_res = respond_to_student_ans(question, student_answer, student.name, gpt_ans_explanation,all_student_subtopic_mistakes)
+    answer_res = respond_to_student_ans(question, student_answer, student.name, gpt_ans_explanation,student.mistakes)
 
     previous_explanations = " " # we start the previous explanations empty
     student_clarification(question,answer_res,student_answer,previous_explanations)
-    gpt_res = grade_student_response(question, student_answer, student.name, solve_time, sub_topic.name,answer_res)
+    gpt_res = grade_student_response(question, student_answer, student.name, solve_time, subtopic.name,answer_res)
 
 
 
-    max_eval_attempts = 10 # if GPT messes up json format, it can try another 9 times
+    max_eval_attempts = 10 # if GPT messes up json format, the system can try another 9 times
     for attempt in range(max_eval_attempts):
         try:
             # Extract metric updates from the GPT response
@@ -825,14 +897,15 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 # In[21]:
 
 
-q1 = "What is 0.96**5"
-q2 = "If x + y = 0, and y + 2 = 24, what are x and y"
-q3 = "What is the derivative of  ln(x) with respect to x"
-q4 = '''
-Twenty dozen cups cost $1200 less than the total cost of
-half a dozen plates sold at $6000 each.
-Calculate the total cost of buying each cup.
-''' # Example from Self Reliant Paper
+# q1 = "What is 0.96**5"
+# q2 = "If x + y = 0, and y + 2 = 24, what are x and y"
+# q3 = "What is the derivative of  ln(x) with respect to x"
+# q4 = '''
+# Twenty dozen cups cost $1200 less than the total cost of
+# half a dozen plates sold at $6000 each.
+# Calculate the total cost of buying each cup.
+# ''' 
+# Example from Self Reliant Paper
 
 # code_b = question_to_code_block()
 # code_b
@@ -962,14 +1035,14 @@ def get_answer_explanation_with_memory(question):
 
 # based off "MemPrompt: memory-assisted Prompt Editing with User Feedback" paper
 def mem_prompt_learning():
-    sub_topic_name = input("Enter the sub-topic you want to learn: ")
+    subtopic_name = input("Enter the sub-topic you want to learn: ")
     user_type = "trainer"
     # make subtopic and studnet objects we will use just for training
     # nothing will chagne in teh students database collection on MongoDB
-    sub_topic_placeholder = students.Subtopic(sub_topic_name,1)
+    subtopic_placeholder = students.Subtopic(subtopic_name,1)
     student_placeholder = students.Student("trainer",1) # placeholder for a student's name. This will NOT negatively affect the ask_question function
     # get the question
-    question = ask_question(student_placeholder,sub_topic_placeholder,user_type)
+    question = ask_question(student_placeholder,subtopic_placeholder,user_type)
     # find the question, or the most similar question that's in the database already
     # get the GPT generated answer and explanation
     explanation, answer = get_answer_explanation_with_memory(question)
@@ -989,7 +1062,7 @@ def mem_prompt_learning():
         print("Thank you training GPT Tutor! Have a great day.")
 
 
-# In[27]:
+# In[42]:
 
 
 # asks student question, evaluates and updates their database
@@ -1001,13 +1074,10 @@ def student_learning():
     StudentCollection = students.StudentsCollection(main_collection) 
     all_student_names = StudentCollection.current_student_names()
 
-
-    """Asks the student a question and updates their stats."""
+    """Asks the student a question and updates their stats."""    
+    # get the student
     full_name = input("Enter your full name (Example: John Doe): ")
-    # grade_level = input("What grade are you in (Grade 1-12): ") # 
-    sub_topic_name = input("Enter the sub-topic you want to learn: ")
-
-    print()
+   
     # if student is in database, get the object
     if full_name in all_student_names:
         print(f"{full_name} is already in the database")
@@ -1016,54 +1086,46 @@ def student_learning():
         # if the student is not in the database, create the object
         print(f"{full_name} will be added to the database")
         student = students.Student(full_name) # initialize student
-
     
-    mistakes = student.mistakes # initialize mistakes array for student [question, mistake]
-    print("The student's name",student.name)
-    print("The student's subtopics",student.subtopics)
-    print("The student's mistakes",student.mistakes)
-    # find out if the has data related to the subtopic
-    # print(student.current_subtopic_names())
-    print()
-    # sub_topic = None
-    if student.current_subtopic_names(): # if current/student_names != NULL
-        if sub_topic_name in student.current_subtopic_names():
-            sub_topic = student.get_subtopic(sub_topic_name)
+    # pick the grade, education, topic_name, subtopic_name, and id_token
+    grade, education, topic_name, subtopic_name, id_token = get_subtopic_math_data(math_df_path)
+    
+    # find/create subtopic
+    #TODO change functions to take in token
+    if student.current_subtopic_ids(): # if current/student_names != NULL
+        if id_token in student.current_subtopic_ids():
+            subtopic = student.get_subtopic(id_token)
         else:
-            sub_topic = students.Subtopic(sub_topic_name)
-            student.add_subtopic(sub_topic)
-            sub_topic = student.get_subtopic(sub_topic_name)
-    else: # If student has no subtopics
-        sub_topic = students.Subtopic(sub_topic_name)
+            subtopic = students.Subtopic(subtopic_name, grade, education, topic_name)
+            student.add_subtopic(subtopic)
+            subtopic = student.get_subtopic(subtopic.id)
+    else: # If student has no subtopics, create the subtopic object
+        subtopic = students.Subtopic(subtopic_name, grade, education, topic_name)
         # connect subtopic object  to student object
-        student.add_subtopic(sub_topic)
-        sub_topic = student.get_subtopic(sub_topic_name)
-        # find all student's old mistakes for subtopic
-        # mistakes = sub_topic.metrics.get_all_mistakes()
-        # mistakes is a map with the following keys: communication, interpretation, computation, and conceptual
-    print(sub_topic.name)
+        student.add_subtopic(subtopic)
+        subtopic = student.get_subtopic(subtopic.id)
+
     # ask the student a question
-    question = ask_question(student.name, sub_topic, user_type)
+    question = ask_question(student.name, subtopic, user_type)
     # print(question)
     # receive answer,  calculate GPT answer, have a chance for the student to ask questions, evaluate student
-    metric_updates = receive_respond_and_update(question, student, sub_topic, mistakes)
+    metric_updates = receive_respond_and_update(question, student, subtopic)
     # print(json.dumps(metric_updates, indent=2, sort_keys=True)) # print json
-    # return metric_updates
     # # update the database's subtopic data
-    sub_topic.update_subtopic(metric_updates)
+    subtopic.update_subtopic(metric_updates)
     # add the json mistakes update
     print(f"\n\n student mistakes: {student.mistakes} ")
     student.add_mistakes(metric_updates)
+    
     # remove old object and add new object ( updates object if it already is in database)
     if student.name in all_student_names:
         StudentCollection.delete_student(student)
     StudentCollection.add_student(student)
-    # 
+    
     # StudentCollection
     # Ask the student if they want to be asked another question.
     answer = input("Do you want another question? 'yes' or 'no' ")
-    answer = answer.lower() # make the 'Yes' or 'No' lowercase
-    while answer not in ("yes", "no"):
+    while answer.lower() not in ("yes", "no"):
         answer = input("Invalid input; Please enter 'yes' or 'no': ")
     if answer == "yes":
         student_learning()
@@ -1072,7 +1134,7 @@ def student_learning():
 
 
 
-# In[28]:
+# In[45]:
 
 
 def main():
@@ -1098,12 +1160,71 @@ def main():
             valid = True
 
 
-# In[30]:
+# In[46]:
 
 
 # Check if the script is being run directly
 if __name__ == "__main__":
     main()
+    
+
+
+# In[64]:
+
+
+# name: Kaleb Taley
+# issue: np array matrix
+
+
+# In[65]:
+
+
+asd = """
+Evaluation of John D's Performance:
+
+Question: What is the sum of 325 + 187? Explain how you got your answer.
+- John D's answer is 23.
+
+1. Communication: 5/5
+- John D effectively communicated his answer, providing a clear response to the question.
+
+2. Interpretation: 5/5
+- John D correctly interpreted the question and attempted to find the sum of the given numbers.
+
+3. Computation: 2/5
+- John D's computation is incorrect as he added the digits in the ones place (5 + 7 = 12) and ignored the digits in the hundreds place.
+
+4. Conceptual Understanding: 3/5
+- John D demonstrated some understanding of addition but made a fundamental error in adding the numbers.
+
+5. Time Taken: 5/5
+- John D took 1.066 seconds to complete the question, which is a reasonable amount of time.
+
+Average Score: (5 + 5 + 2 + 3 + 5) / 5 = 4/5
+
+Explanation:
+John D performed well in communication, interpretation, and time management. However, his computation and conceptual understanding were lacking as he made a significant error in adding the numbers. It is crucial to pay attention to each place value when performing addition to avoid such mistakes. Overall, John D's performance was above average with a score of 4 out of 5.
+"""
+
+
+# In[65]:
+
+
+
+
+
+# In[ ]:
+
+
+a = 0
+while(True):
+    print(a)
+    a +=1
+    extract_metrics_scores(asd)
+
+
+# In[ ]:
+
 
 
 
