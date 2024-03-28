@@ -1035,12 +1035,13 @@ def get_answer_explanation_with_memory(question):
 
 # based off "MemPrompt: memory-assisted Prompt Editing with User Feedback" paper
 def mem_prompt_learning():
-    subtopic_name = input("Enter the sub-topic you want to learn: ")
+    # subtopic_name = input("Enter the sub-topic you want to learn: ")
+    grade, education, topic_name, subtopic_name, id_token = get_subtopic_math_data(math_df_path)
     user_type = "trainer"
     # make subtopic and studnet objects we will use just for training
-    # nothing will chagne in teh students database collection on MongoDB
-    subtopic_placeholder = students.Subtopic(subtopic_name,1)
-    student_placeholder = students.Student("trainer",1) # placeholder for a student's name. This will NOT negatively affect the ask_question function
+    # nothing will change in teh students database collection on MongoDB
+    subtopic_placeholder = students.Subtopic(subtopic_name,grade, education, topic_name)
+    student_placeholder = students.Student("trainer") # placeholder for a student's name. This will NOT negatively affect the ask_question function
     # get the question
     question = ask_question(student_placeholder,subtopic_placeholder,user_type)
     # find the question, or the most similar question that's in the database already
@@ -1179,32 +1180,32 @@ if __name__ == "__main__":
 # In[65]:
 
 
-asd = """
-Evaluation of John D's Performance:
-
-Question: What is the sum of 325 + 187? Explain how you got your answer.
-- John D's answer is 23.
-
-1. Communication: 5/5
-- John D effectively communicated his answer, providing a clear response to the question.
-
-2. Interpretation: 5/5
-- John D correctly interpreted the question and attempted to find the sum of the given numbers.
-
-3. Computation: 2/5
-- John D's computation is incorrect as he added the digits in the ones place (5 + 7 = 12) and ignored the digits in the hundreds place.
-
-4. Conceptual Understanding: 3/5
-- John D demonstrated some understanding of addition but made a fundamental error in adding the numbers.
-
-5. Time Taken: 5/5
-- John D took 1.066 seconds to complete the question, which is a reasonable amount of time.
-
-Average Score: (5 + 5 + 2 + 3 + 5) / 5 = 4/5
-
-Explanation:
-John D performed well in communication, interpretation, and time management. However, his computation and conceptual understanding were lacking as he made a significant error in adding the numbers. It is crucial to pay attention to each place value when performing addition to avoid such mistakes. Overall, John D's performance was above average with a score of 4 out of 5.
-"""
+# asd = """
+# Evaluation of John D's Performance:
+#
+# Question: What is the sum of 325 + 187? Explain how you got your answer.
+# - John D's answer is 23.
+#
+# 1. Communication: 5/5
+# - John D effectively communicated his answer, providing a clear response to the question.
+#
+# 2. Interpretation: 5/5
+# - John D correctly interpreted the question and attempted to find the sum of the given numbers.
+#
+# 3. Computation: 2/5
+# - John D's computation is incorrect as he added the digits in the ones place (5 + 7 = 12) and ignored the digits in the hundreds place.
+#
+# 4. Conceptual Understanding: 3/5
+# - John D demonstrated some understanding of addition but made a fundamental error in adding the numbers.
+#
+# 5. Time Taken: 5/5
+# - John D took 1.066 seconds to complete the question, which is a reasonable amount of time.
+#
+# Average Score: (5 + 5 + 2 + 3 + 5) / 5 = 4/5
+#
+# Explanation:
+# John D performed well in communication, interpretation, and time management. However, his computation and conceptual understanding were lacking as he made a significant error in adding the numbers. It is crucial to pay attention to each place value when performing addition to avoid such mistakes. Overall, John D's performance was above average with a score of 4 out of 5.
+# """
 
 
 # In[65]:
