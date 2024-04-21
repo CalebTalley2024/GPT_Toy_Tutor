@@ -40,7 +40,7 @@ math_df_path = '../data/GPT_tutor_topics(subtopics_included).csv'
 def get_subtopic_math_data(path = math_df_path):
     # math_df: dataframe with grade, education level, topic and subtopics
     math_df = pd.read_csv(path)
-    grade = input("What grade are you in (Grade 1-12): ")
+    grade = input("What grade are you in (Grade 1-12): \n")
     while True:  # Loop until valid grade is entered
         if 0 <= int(grade) <= 12 or grade.upper() == 'K':
             break  # Exit loop if grade is valid
@@ -58,7 +58,7 @@ def get_subtopic_math_data(path = math_df_path):
     elif grade in ["9", "10", "11", "12"]:
         education = "High School"
 
-    print(f"grade {grade}, education: {education}")
+    print(f"Grade {grade}, Education: {education}")
     
     grade = int(grade)
     # filter to get rows with that grade (.values converts df -> np array)
@@ -70,7 +70,7 @@ def get_subtopic_math_data(path = math_df_path):
     
     for i, topic_name in enumerate(filt_df_topics):
         print(f"{i}: {topic_name} ")
-    topic_idx = input("Pick a topic by number: ")
+    topic_idx = input("Pick a topic by number: \n")
     while True:  # Loop for input validation
         try:
             topic_idx = int(topic_idx)
@@ -90,7 +90,7 @@ def get_subtopic_math_data(path = math_df_path):
     for i, subtopic_name in enumerate(filt_df): # go through columns
         print(f"{i}: {subtopic_name} ")
 
-    subtopic_idx = input("Pick the number that matches your preferred subtopic")
+    subtopic_idx = input("Pick the number that matches your preferred subtopic: \n")
 
     while True:
         try:
@@ -201,7 +201,7 @@ def init_question(student, subtopic, user_type):
     valid = True
     level = -1
     while level > 5 or level < 1: # continue the loop till we have a valid level
-        level = int(input("Enter the question level you want between 1 and 5: "))
+        level = int(input("Enter the question level you want between 1 and 5: \n"))
         if level > 5 or level < 1:
             print("Invalid level, pick again.")
                 
@@ -308,9 +308,13 @@ def get_student_timed_response():
 # In[12]:
 
 
-def respond_to_student_ans(question, student_answer, student_name,gpt_ans_explanation,get_all_student_related_mistakes):
+def respond_to_student_ans(question, student_answer, student_name, gpt_ans_explanation,get_all_student_related_mistakes):
     # take in the student_name's answer, and the topic
-    print("Answer: \n")
+
+    print(f"GPT's Answer: \n {gpt_ans_explanation}\n\n") # show GPT's answer
+
+
+
     question_message = {
         "role": "system",
         "content": f"You are a math tutor. The question that the user is answering is '{question}'."
@@ -329,7 +333,7 @@ def respond_to_student_ans(question, student_answer, student_name,gpt_ans_explan
 
     answer_res = get_response_text(init_response_messages)
 
-    print(f"{answer_res}\n\n")
+    print(f" GPT initial response to {student_name}'s answer: \n {answer_res}\n\n")
 
     return answer_res
 
@@ -447,7 +451,7 @@ def get_gpt_clarification (question, gpt_answer, student_answer, previous_explan
 
 
     # create message for the student's question on the math problem
-    student_question = input("Write down what you want clarification on")
+    student_question = input("Write down what you want clarification on: \n")
     student_question_msg = create_message_part(student_question,3)
 
     msgs = [only_answer_math_msg,previous_info_msg,student_question_msg]
@@ -1021,7 +1025,7 @@ def get_answer_explanation_with_memory(question):
     # convert the list to a string
     feedback_str = f"{similar_feedback}"
     # print(type(feedback_str))
-    print(f"found feedback from memory.json: {feedback_str}")
+    print(f"found feedback from memory.json: {feedback_str}\n")
     prompt = create_prompt(question,feedback_str)
 
     # get the GPT generated answer and explanation
@@ -1077,7 +1081,7 @@ def student_learning():
 
     """Asks the student a question and updates their stats."""    
     # get the student
-    full_name = input("Enter your full name (Example: John Doe): ")
+    full_name = input("Enter your full name (Example: John Doe): \n")
    
     # if student is in database, get the object
     if full_name in all_student_names:
@@ -1115,7 +1119,7 @@ def student_learning():
     # # update the database's subtopic data
     subtopic.update_subtopic(metric_updates)
     # add the json mistakes update
-    print(f"\n\n student mistakes: {student.mistakes} ")
+    # print(f"\n\n student mistakes: {student.mistakes} ")
     student.add_mistakes(metric_updates)
     
     # remove old object and add new object ( updates object if it already is in database)
