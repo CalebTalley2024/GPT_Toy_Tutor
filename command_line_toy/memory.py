@@ -88,8 +88,8 @@ class Memory_Collection:
             # reinitialilze the object collection (allows MongoDB to update the 'self' object
             # update the correct database
             
-            if self.type == "Query": # query = question
-                self.collection = client["MemPrompt"]["Query"]
+            if self.type == "Questions": # query = question
+                self.collection = client["MemPrompt"]["Questions"]
             elif self.type == "Answers": # query = question
                 self.collection = client["MemPrompt"]["Answers"]
             elif self.type == "Evaluations": # query = (GPT answer + student answer) pair
