@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[33]:
+# In[1]:
 
 
 from dotenv import load_dotenv
 import json
 import openai
 import os
-import numpy as np
 import pandas as pd
 import time
 # import custom python files for memory and students functions
@@ -16,7 +15,7 @@ import memory
 import students
 
 
-# In[34]:
+# In[2]:
 
 
 # df = pd.read_csv('../data/GPT_tutor_topics(subtopics_included).csv')
@@ -27,12 +26,13 @@ openai.api_key = os.getenv('OPENAI_KEY_1')
 model_35 = "gpt-3.5-turbo"
 student_data_path = "../data/students.json"
 memory_path = "../data/memory.json"
-question_temp = 1 # temp has to be between 0 and 2
+question_temp = 1 # temperature has to be between 0 and 2
 math_df_path = '../data/GPT_tutor_topics(subtopics_included).csv'
+gpt_solve_time_placeholder = 100 # TODO find better place holder
 # df = pd.read_csv(math_df_path)
 
 
-# In[38]:
+# In[3]:
 
 
 # takes in path
@@ -110,7 +110,7 @@ def get_subtopic_math_data(path = math_df_path):
     return grade, education, topic_name, subtopic_name, id_token
 
 
-# In[36]:
+# In[4]:
 
 
 # data helper functions for JSON data
@@ -126,7 +126,7 @@ def post_ext_data(data, path):
         json.dump(data, f, indent=4)
 
 
-# In[6]:
+# In[5]:
 
 
 # helper functions
@@ -151,7 +151,7 @@ def get_response_text_w_temp(messages, temp):
     return res['choices'][0]['message']['content']
 
 
-# In[7]:
+# In[6]:
 
 
 # creates one part of the message that you send to the GPT API for a response.
@@ -174,7 +174,7 @@ def create_message_part(text, role_type):
     return message_part
 
 
-# In[8]:
+# In[7]:
 
 
 # helper functions for ask_question
@@ -186,9 +186,9 @@ def filter_answers():
         "content": f"I am a math teacher for Grade K-12 in the United States. I am using the GPT API to help me answer my students' math questions. Please only answer my questions about math, and do not respond to any questions that are not about math."
     }
     return message
-# is_current_student: boolean
-def init_question(student, subtopic, user_type):
 
+# is_current_student: boolean
+def init_question(student_name, subtopic_obj, user_type):
     # Prompt for level choice
     if user_type == "user":
         print("Hello User/Student! \npick the level of difficulty that you want.")
@@ -206,7 +206,7 @@ def init_question(student, subtopic, user_type):
             print("Invalid level, pick again.")
                 
     # criteria: tell GPT scales for proficiency and level
-    init = f"Based on {student}'s database, the student's skill level for {subtopic.topic_name}, (specifically{subtopic.name}) is {level}. Please give {student} a test question based on {subtopic.topic_name}, (specifically{subtopic.name}) and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
+    init = f"Based on {student_name}'s database, the student's skill level for {subtopic_obj.topic_name}, (specifically{subtopic_obj.name}) is {level}. Please give {student_name} a test question based on {subtopic_obj.topic_name}, (specifically{subtopic_obj.name}) and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
     criteria = f"Level is on a scale between 1 and 5, where 5 is the hardest level."
 
     # combine criteria and message
@@ -255,19 +255,19 @@ def question_formatting():
     return formatting, level_meaning
 
 
-# In[9]:
+# In[8]:
 
 
 # ask question to student
-def ask_question(student, subtopic, user_type):
+# if in trainer mode, you can give feedback
+def ask_question(student_name, subtopic_obj, user_type, id_token):
     # make sure to only receive math answers and initialize the questions GPT will give
     filter_subject = filter_answers()
-    filter_question = init_question(student, subtopic,user_type)
+    filter_question = init_question(student_name, subtopic_obj, user_type) # level is picked here
     formatting, level_meaning = question_formatting()
-    messages = [filter_subject, filter_question, formatting, level_meaning]
-    # print(messages)
-    # send the formatting to GPT and get a response
-    tutor_question = get_response_text_w_temp(messages,question_temp)
+            
+    tutor_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token)    
+    
     # here we print out the question GPT gives the student
     print(f"{tutor_question}: \n\n")
     # make sure the question is always in lower case
@@ -278,7 +278,29 @@ def ask_question(student, subtopic, user_type):
 # In[9]:
 
 
+# generate a proposed_question
+# Mempropmt option! If you are a trainer, you can give feedback to GPT tutor to have it ask better questions
+# final question returned is what the user will use
+# id_token is the query
+def generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token):
+    
+    # access Mempropmt question collection
+    question_coll = memory.MemPrompt().questions
+    old_feedback = question_coll.get_feedback_w_query(id_token) # get feedback, if None -> " "
+    old_feedback_api_part = create_message_part(old_feedback,1) # create system message
+    messages = [filter_subject, filter_question, formatting, level_meaning, old_feedback_api_part]
+    # print(messages)
+    # send the formatting to GPT and get a response
+    proposed_question = get_response_text_w_temp(messages,question_temp)
 
+    if user_type == "trainer":
+        given_new_feedback = question_coll.give_feedback(proposed_question, id_token)
+        
+        if given_new_feedback:
+            generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token)  #TODO fix this
+
+    # once the trainer is satisfied, or if the person is not a trainer,  return the question
+    return proposed_question 
 
 
 # In[10]:
@@ -310,11 +332,9 @@ def get_student_timed_response():
 
 def respond_to_student_ans(question, student_answer, student_name, gpt_ans_explanation,get_all_student_related_mistakes):
     # take in the student_name's answer, and the topic
-
+    
     print(f"GPT's Answer: \n {gpt_ans_explanation}\n\n") # show GPT's answer
-
-
-
+    
     question_message = {
         "role": "system",
         "content": f"You are a math tutor. The question that the user is answering is '{question}'."
@@ -712,13 +732,8 @@ sj["question"]
 # In[17]:
 
 
-# question: String
-# student, subtopic: custom Objects
-# all_student_subtopic_mistakes: dictionary
-# receive student's answer, respond to their answer, and update their statistics
-def receive_respond_and_update(question, student, subtopic):
-    # Get the student's response and the time taken
-    student_answer, solve_time = get_student_timed_response()
+# receives students answer, and returns GPT's evaluations of their answer compared to GPT's answer
+def receive_and_evaluate(question, student, subtopic, student_answer_explanation, user_type = "user"):
 
     # Grade the student's response using the given question, student response, time, and subtopic
 
@@ -726,19 +741,44 @@ def receive_respond_and_update(question, student, subtopic):
     # uses "memPrompt" like memory
     gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
 
-    answer_res = respond_to_student_ans(question, student_answer, student.name, gpt_ans_explanation,student.mistakes)
+    answer_res = respond_to_student_ans(question, student_answer_explanation, student.name, gpt_ans_explanation,student.mistakes)
 
     previous_explanations = " " # we start the previous explanations empty
-    student_clarification(question,answer_res,student_answer,previous_explanations)
-    gpt_res = grade_student_response(question, student_answer, student.name, solve_time, subtopic.name,answer_res)
+    student_clarification(question,answer_res,student_answer_explanation,previous_explanations)
+    gpt_time = 60 
+    gpt_eval_res = grade_student_response(question, student_answer_explanation, student.name, gpt_solve_time_placeholder, subtopic.name,answer_res)
+    
+    if user_type == "trainer":
+        # get evaluation collection from database
+        eval_coll = memory.MemPrompt().evaluation
+        
+        given_new_feedback = eval_coll.give_feedback(question,student_answer_explanation,answer_res,gpt_eval_res )
+
+        if given_new_feedback:
+            receive_and_evaluate(question, student, subtopic, student_answer_explanation, user_type = "trainer")  
+        
+    return gpt_eval_res
 
 
+# In[18]:
+
+
+# question: String
+# student, subtopic: custom Objects
+# all_student_subtopic_mistakes: dictionary
+# receive student's answer, respond to their answer, and update their statistics
+# returns metric updates, non_formatted GPT evaluation of student, and the solve time #TODO if you have time, return non_formttted evaluation and solve time in different function
+def receive_respond_and_update(question, student, subtopic):
+    # Get the student's response and the time taken
+    student_answer, solve_time = get_student_timed_response()
+
+    gpt_eval_res, _ = receive_and_evaluate(question,student,subtopic, student_answer) 
 
     max_eval_attempts = 10 # if GPT messes up json format, the system can try another 9 times
     for attempt in range(max_eval_attempts):
         try:
             # Extract metric updates from the GPT response
-            metric_updates_string = extract_metrics_scores(gpt_res)
+            metric_updates_string = extract_metrics_scores(gpt_eval_res)
             metric_updates = eval(metric_updates_string) # string --> json
             # Return the metric updates
             return metric_updates
@@ -754,14 +794,14 @@ def receive_respond_and_update(question, student, subtopic):
     
 
 
-# In[18]:
+# In[19]:
 
 
 #TODO make a test portion
 #TODO Evaluating AI/Student's Answer to question
 
 
-# In[19]:
+# In[20]:
 
 
 # converts question's format into python formatting
@@ -806,7 +846,7 @@ def backtrack_to_explanation(question, answer):
     return explanation
 
 
-# In[20]:
+# In[21]:
 
 
 #### TRYING TO run python code to get question right
@@ -840,7 +880,6 @@ def question_to_code_block(question):
             "role": "system",
             "content": question
         }
-
     ]
     code_block = get_response_text(message)
     return code_block
@@ -890,7 +929,6 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
     instruction_msg = create_message_part(set_up_question,3)
 
     messages = [question_msg,answer_msg,instruction_msg]
-
     res = get_response_text(messages)
 
     pass
@@ -898,7 +936,7 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 
 
 
-# In[21]:
+# In[22]:
 
 
 # q1 = "What is 0.96**5"
@@ -920,20 +958,20 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 
 
 
-# In[22]:
+# In[23]:
 
 
 # 0.96**5
 
 
-# In[23]:
+# In[24]:
 
 
 # query = "Calculate the area of a rectangle with length 5 and width 8."
 # memory.find_most_similar_memory(query)
 
 
-# In[24]:
+# In[25]:
 
 
 # creates prompt with question and feedback if it exists
@@ -953,13 +991,13 @@ def create_prompt(question, feedback):
 
     return prompt
 
-
+# explanation(has answer) -> answer
 def get_answer_from_explanation(explained_ans):
     instruction = "From the given explanation, give only the question solved and the answer given"
     instruction_msg = create_message_part(instruction,1)
     explained_ans_msg = create_message_part(explained_ans,3)
 
-    msgs = [instruction_msg,explained_ans_msg]
+    msgs = [instruction_msg, explained_ans_msg]
     ans = get_response_text(msgs)
     return ans
 
@@ -1001,27 +1039,30 @@ def send_feedback(question, feedback):
     # update the memory.json file with the new information
     post_ext_data(data,memory_path)
 
-# will update the memory if the user spots a mistake that GPT has made in the answer and/or the explanation of the answer
-def update_memory(question, answer, explanation):
+# will update the answer memory if the user spots a mistake that GPT has made in the answer and/or the explanation of the answer
+def update_ans_memory(question, answer, explanation):
     # first display the answer to the user
     print(f"Answer: {answer}")
     print(f"Explanation: {explanation}\n")
     need_feedback = input("does the answer and explanation above require any feedback: 'Yes', or 'No'")
     if need_feedback == 'Yes':
         feedback = input("What needs to be improved in the analysis process?")
-        memories0 = memory.Memories() # creates Memories Object
-        memories0.update_memory_feedback(question, feedback)
+        # get answer collection from database
+        ans_coll = memory.MemPrompt().answers
+        ans_coll.update_memory_feedback(question, feedback)
     else:
         print("memory will not be updated")
 
 
-# In[25]:
+# In[26]:
 
 
-# GPT answser the question with the feedback memory json
+# GPT answer the question with the feedback memory json
 def get_answer_explanation_with_memory(question):
+    # get the answer collection from database
+    ans_coll = memory.MemPrompt().answers
     # get the feedback associated with the most similar question
-    _,similar_feedback = memory.find_most_similar_memory(question)
+    _,similar_feedback = ans_coll.find_most_similar_memory(question) 
     # convert the list to a string
     feedback_str = f"{similar_feedback}"
     # print(type(feedback_str))
@@ -1029,31 +1070,60 @@ def get_answer_explanation_with_memory(question):
     prompt = create_prompt(question,feedback_str)
 
     # get the GPT generated answer and explanation
-    #ans_explanation: gives both the answer to the quesiton and the explanation of the answer
-    ans_explanation, answer = get_answer_and_explanation(prompt)
-    return ans_explanation,answer
+    # ans_explanation: gives both the answer to the question and the explanation of the answer
+    proposed_ans_explanation, proposed_ans = get_answer_and_explanation(prompt)
+    
+    # this function is only called in 'training mode', therefore no if statement is need to give feedback
+    given_new_feedback = ans_coll.give_feedback(question,proposed_ans,proposed_ans_explanation)
+    if given_new_feedback: # recursively call the function till the answer enough feedback is given to make the answer + explanation appropriate
+        get_answer_explanation_with_memory(question)
+    
+    # return final answer and explanation
+    return proposed_ans_explanation,proposed_ans
 
 
 # In[26]:
 
 
+
+
+
+# In[27]:
+
+
 # based off "MemPrompt: memory-assisted Prompt Editing with User Feedback" paper
-def mem_prompt_learning():
-    # subtopic_name = input("Enter the sub-topic you want to learn: ")
-    grade, education, topic_name, subtopic_name, id_token = get_subtopic_math_data(math_df_path)
+def mem_prompt_learning(): #todo fix this
     user_type = "trainer"
-    # make subtopic and studnet objects we will use just for training
-    # nothing will change in teh students database collection on MongoDB
-    subtopic_placeholder = students.Subtopic(subtopic_name,grade, education, topic_name)
+
+    # get subtopic specific info 
+    # id_token contains all of the info, separated by ': 's
+    grade, education, topic_name, subtopic_name, id_token = get_subtopic_math_data(math_df_path)
+    
+    # get memprompt collections of memory data
+    # this database has 3 collections: 'questions', 'answers', and 'evaluation'
+    memprompt = memory.MemPrompt()    
+    
+    # make subtopic and student objects we will use just for training
+    # nothing will change in the students database collection on MongoDB
+    subtopic_placeholder = students.Subtopic(subtopic_name, grade, education, topic_name)
     student_placeholder = students.Student("trainer") # placeholder for a student's name. This will NOT negatively affect the ask_question function
+    
     # get the question
-    question = ask_question(student_placeholder,subtopic_placeholder,user_type)
+    question = ask_question(student_placeholder,subtopic_placeholder,user_type, id_token)
     # find the question, or the most similar question that's in the database already
     # get the GPT generated answer and explanation
     explanation, answer = get_answer_explanation_with_memory(question)
 
     # update the memory.json file ( if the answer is already correct, then nothing in the database will change)
-    update_memory(question, answer, explanation)
+    # update_ans_memory(question, answer, explanation)
+    
+    # perform evaluation
+
+    gpt_eval = receive_and_evaluate(question, student_placeholder, subtopic_placeholder, answer)
+    
+    eval_coll = memprompt.evaluation
+    
+    eval_coll.give_feedback(question, answer,explanation,gpt_eval)
 
     # Ask the student if they want to be asked another question.
     answer = input("Do you want another question? 'yes' or 'no' ")
@@ -1067,7 +1137,7 @@ def mem_prompt_learning():
         print("Thank you training GPT Tutor! Have a great day.")
 
 
-# In[42]:
+# In[28]:
 
 
 # asks student question, evaluates and updates their database
@@ -1138,8 +1208,28 @@ def student_learning():
         print("Thank you for using GPT Tutor! Have a great day.")
 
 
+# In[29]:
 
-# In[45]:
+
+# def give_feedback(feedback_type):
+# 
+#     question = ask_question(student.name, subtopic, user_type)
+#     
+#     
+# 
+#     '''
+#     perform action
+#     
+#     ask if you want to review action
+#     
+#     
+#     if you do want to review, update database
+#     
+#     
+#     '''
+
+
+# In[30]:
 
 
 def main():
@@ -1165,7 +1255,7 @@ def main():
             valid = True
 
 
-# In[46]:
+# In[33]:
 
 
 # Check if the script is being run directly
@@ -1184,32 +1274,32 @@ if __name__ == "__main__":
 # In[65]:
 
 
-# asd = """
-# Evaluation of John D's Performance:
-#
-# Question: What is the sum of 325 + 187? Explain how you got your answer.
-# - John D's answer is 23.
-#
-# 1. Communication: 5/5
-# - John D effectively communicated his answer, providing a clear response to the question.
-#
-# 2. Interpretation: 5/5
-# - John D correctly interpreted the question and attempted to find the sum of the given numbers.
-#
-# 3. Computation: 2/5
-# - John D's computation is incorrect as he added the digits in the ones place (5 + 7 = 12) and ignored the digits in the hundreds place.
-#
-# 4. Conceptual Understanding: 3/5
-# - John D demonstrated some understanding of addition but made a fundamental error in adding the numbers.
-#
-# 5. Time Taken: 5/5
-# - John D took 1.066 seconds to complete the question, which is a reasonable amount of time.
-#
-# Average Score: (5 + 5 + 2 + 3 + 5) / 5 = 4/5
-#
-# Explanation:
-# John D performed well in communication, interpretation, and time management. However, his computation and conceptual understanding were lacking as he made a significant error in adding the numbers. It is crucial to pay attention to each place value when performing addition to avoid such mistakes. Overall, John D's performance was above average with a score of 4 out of 5.
-# """
+asd = """
+Evaluation of John D's Performance:
+
+Question: What is the sum of 325 + 187? Explain how you got your answer.
+- John D's answer is 23.
+
+1. Communication: 5/5
+- John D effectively communicated his answer, providing a clear response to the question.
+
+2. Interpretation: 5/5
+- John D correctly interpreted the question and attempted to find the sum of the given numbers.
+
+3. Computation: 2/5
+- John D's computation is incorrect as he added the digits in the ones place (5 + 7 = 12) and ignored the digits in the hundreds place.
+
+4. Conceptual Understanding: 3/5
+- John D demonstrated some understanding of addition but made a fundamental error in adding the numbers.
+
+5. Time Taken: 5/5
+- John D took 1.066 seconds to complete the question, which is a reasonable amount of time.
+
+Average Score: (5 + 5 + 2 + 3 + 5) / 5 = 4/5
+
+Explanation:
+John D performed well in communication, interpretation, and time management. However, his computation and conceptual understanding were lacking as he made a significant error in adding the numbers. It is crucial to pay attention to each place value when performing addition to avoid such mistakes. Overall, John D's performance was above average with a score of 4 out of 5.
+"""
 
 
 # In[65]:
@@ -1218,7 +1308,7 @@ if __name__ == "__main__":
 
 
 
-# In[ ]:
+# In[47]:
 
 
 # a = 0

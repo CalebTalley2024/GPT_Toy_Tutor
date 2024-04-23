@@ -19,9 +19,9 @@ class MemPrompt:
     def __init__(self):
         # self.collection = client["Memory"]["Memory0"]
         # different memprompt databases
+        self.questions = Memory_Collection("Q")
         self.answers = Memory_Collection("A")
-        self.evaluation = Memory_Collection("Q")
-        self.questions = Memory_Collection("E")
+        self.evaluation = Memory_Collection("E")
         # self.json = list(client["Memory"]["Memory0"].find())
         
 class Memory_Collection:
@@ -145,7 +145,7 @@ class Memory_Collection:
             feedback = self.get_memory_row(query)["Query"]
         except ValueError:
             return ""
-        
+
 
     # will update the memory if the user spots a mistake that GPT has made in the answer and/or the explanation of the answer
 
@@ -163,13 +163,12 @@ class Memory_Collection:
     # if Evaluation:
     #     - info_1 = GPT Answer
     #     - info_2 = Student Answer
-    #     - info_3 = Time taken for evaluation (seconds)
-    #     - info_4 = Evaluation result
-    
+    #     - info_3 = Evaluation result
+
     # returns whether or not feedback was needed
-    def give_feedback(self, question, info_1, info_2 = None, info_3 = None, info_4 = None): # TODO Test
-        
-        if self.type == "Question": # query = question
+    def give_feedback(self, question, info_1, info_2 = None, info_3 = None): # TODO Test
+
+        if self.type == "Questions": # query = question
             print(f"grade|education|topic_name|subtopic_name: {info_1}")
             print(f"Proposed Question: {question}\n")
         elif self.type == "Answers": # query = question
@@ -179,12 +178,12 @@ class Memory_Collection:
         elif self.type == "Evaluations": # query = (GPT answer + student answer) pair
             print(f"Question: {question}\n")
             print(f"Answer: {info_1}\n")
-            print(f"Explanation: {info_2}\n")
-            print(f"Time: {info_3} seconds \n")
-            print(f"Evaluation: {info_4}\n")
-            
+            print(f"Answer Response: {info_2}\n")
+            # print(f"Time: {info_3} seconds \n")
+            print(f"Evaluation: {info_3}\n")
+
         # first display the answer to the user
-        need_feedback = input("does the answer and explanation above require any feedback: 'Yes', or 'No'")
+        need_feedback = input(f"{self.type[:-1]}: above require any feedback: 'Yes', or 'No'") # self.type[:-1]: plural -> singular
         if need_feedback == 'Yes':
             feedback = input("What needs to be improved in the analysis process?")
             self.update_memory_feedback(question, feedback)
