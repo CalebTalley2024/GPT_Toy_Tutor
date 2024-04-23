@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[296]:
+# In[3]:
 
 
 from sklearn.metrics.pairwise import cosine_similarity as cos
@@ -10,7 +10,7 @@ import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
 
 
-# In[297]:
+# In[4]:
 
 
 # collection: data called from MongoDB
@@ -138,10 +138,63 @@ class Memory_Collection:
         most_similar_feedback = self.get_feedback_at_index(most_similar_query_index)["Feedback"]
     
         return most_similar_query, most_similar_feedback
+    
+    # return feedback associated with query, if you get an error, return empty string
+    def get_feedback_w_query(self,query):
+        try:
+            feedback = self.get_memory_row(query)["Query"]
+        except ValueError:
+            return ""
+        
+
+    # will update the memory if the user spots a mistake that GPT has made in the answer and/or the explanation of the answer
+
+    # info_1 and info_2 are different for different memory types
+    # if question: 
+    #     - info_1 = grade|education|topic_name|subtopic_name
+    #     - info_2 = None
+    #     - info_3 = None
+    #     - info_4 = None
+    # if Answers:
+    #     - info_1 = Answer
+    #     - info_2 = Explanation
+    #     - info_3 = None
+    #     - info_4 = None
+    # if Evaluation:
+    #     - info_1 = GPT Answer
+    #     - info_2 = Student Answer
+    #     - info_3 = Time taken for evaluation (seconds)
+    #     - info_4 = Evaluation result
+    
+    # returns whether or not feedback was needed
+    def give_feedback(self, question, info_1, info_2 = None, info_3 = None, info_4 = None): # TODO Test
+        
+        if self.type == "Question": # query = question
+            print(f"grade|education|topic_name|subtopic_name: {info_1}")
+            print(f"Proposed Question: {question}\n")
+        elif self.type == "Answers": # query = question
+            print(f"Question: {question}\n")
+            print(f"Answer: {info_1}\n")
+            print(f"Explanation: {info_2}\n")
+        elif self.type == "Evaluations": # query = (GPT answer + student answer) pair
+            print(f"Question: {question}\n")
+            print(f"Answer: {info_1}\n")
+            print(f"Explanation: {info_2}\n")
+            print(f"Time: {info_3} seconds \n")
+            print(f"Evaluation: {info_4}\n")
+            
+        # first display the answer to the user
+        need_feedback = input("does the answer and explanation above require any feedback: 'Yes', or 'No'")
+        if need_feedback == 'Yes':
+            feedback = input("What needs to be improved in the analysis process?")
+            self.update_memory_feedback(question, feedback)
+            return True
+        else:
+            print("memory will not be updated")
+            return False
 
 
-
-# In[299]:
+# In[5]:
 
 
 # mem = MemPrompt()
@@ -151,6 +204,12 @@ class Memory_Collection:
 # a.update_memory_feedback("What is 1 + 1", " do not append the numbers")
 # a.get_queries()
 # a.json
+
+
+# In[10]:
+
+
+# a.get_memory_row("What is 1 +1")
 
 
 # In[ ]:
