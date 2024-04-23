@@ -38,7 +38,7 @@ gpt_solve_time_placeholder = 100 # TODO find better place holder
 # prints horizontal line made of of 'len' worth of dashes
 def print_line(len = 150):
     print("-" * len)
-    
+
 
 
 # In[14]:
@@ -76,15 +76,15 @@ def get_subtopic_math_data(path = math_df_path):
         education = "High School"
 
     print(f"Grade {grade}, Education: {education}")
-    
+
     grade = int(grade)
     # filter to get rows with that grade (.values converts df -> np array)
     filt_df = math_df.loc[math_df["Grade"] == grade].values # numpy array version
-    filt_df_topics = math_df.loc[math_df["Grade"] == grade]["Math Topic"].values # numpy array version    
+    filt_df_topics = math_df.loc[math_df["Grade"] == grade]["Math Topic"].values # numpy array version
 
     print(f"\nTopics for Grade {grade}, Education Level: {education}")
     print("------------------------------------------------------------------")
-    
+
     for i, topic_name in enumerate(filt_df_topics):
         print(f"{i}: {topic_name} ")
     topic_idx = input("\nPick a topic by number: \n")
@@ -102,16 +102,16 @@ def get_subtopic_math_data(path = math_df_path):
 
     topic_name = filt_df[topic_idx][2] # gets the name from the column
     filt_df = filt_df[topic_idx][3:] # gets the row for the corresponding topic, remove rows for grade and education
-    
-    
-   
-    
-    
+
+
+
+
+
     print(f"\nSubtopics for '{topic_name}'")
     print("------------------------------------------------------------------")
 
-    
-    
+
+
     for i, subtopic_name in enumerate(filt_df): # go through columns
         print(f"{i}: {subtopic_name} ")
 
@@ -129,13 +129,13 @@ def get_subtopic_math_data(path = math_df_path):
 
         except ValueError: # Error: NaN
             subtopic_idx = input("Invalid input. Please enter a number between 0 and 4")
-            
+
     subtopic_name = filt_df[subtopic_idx]
-    # make the id token a collection of all of the math data        
+    # make the id token a collection of all of the math data
     id_token = f"{grade}|{education}|{topic_name}|{subtopic_name}"
-    
+
     print_line()
-    
+
     return grade, education, topic_name, subtopic_name, id_token
 
 
@@ -239,7 +239,7 @@ def init_question(student_name, subtopic_obj, user_type):
         level = int(input("Enter the question level you want between 1 and 5: \n"))
         if level > 5 or level < 1:
             print("Invalid level, pick again.")
-                
+
     # criteria: tell GPT scales for proficiency and level
     init = f"Based on {student_name}'s database, the student's skill level for {subtopic_obj.topic_name}, (specifically{subtopic_obj.name}) is {level}. Please give {student_name} a test question based on {subtopic_obj.topic_name}, (specifically{subtopic_obj.name}) and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
     criteria = f"Level is on a scale between 1 and 5, where 5 is the hardest level."
@@ -276,14 +276,14 @@ def question_formatting():
 
     """
     formatting =  {
-            "role": "system",
-            "content": f"{init},{format}"
-        }
+        "role": "system",
+        "content": f"{init},{format}"
+    }
 
     level_meaning = {
-            "role": "assistant",
-            "content": level_meaning
-        }
+        "role": "assistant",
+        "content": level_meaning
+    }
 
 
 
@@ -301,14 +301,16 @@ def ask_question(student_name, subtopic_obj, user_type, id_token):
     filter_question = init_question(student_name, subtopic_obj, user_type) # level is picked here
     formatting, level_meaning = question_formatting()
 
-   
-    tutor_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token)    
-    
-    # here we print out the question GPT gives the student
 
-    # print(f"{tutor_question}: \n\n")
+    tutor_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token)
+
+    # here we print out the question GPT gives the student
+    print_line()
     # make sure the question is always in lower case
     tutor_question = tutor_question.lower()
+    print(f"GPT's Question: \n{tutor_question}: \n\n")
+    print_line()
+
     return tutor_question
 
 
@@ -320,12 +322,14 @@ def ask_question(student_name, subtopic_obj, user_type, id_token):
 # final question returned is what the user will use
 # id_token is the query #TODO make this return the new question
 def generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token, num_attempts = 0):
-    
+
     # access Mempropmt question collection
     question_coll = memory.MemPrompt().questions
-    
+
     old_feedback = question_coll.get_feedback_w_query(id_token) # get feedback, if None -> " "
-    old_feedback_api_part = create_message_part(old_feedback,1) # create system message
+    old_feedback_str = f"{old_feedback}"
+    print(f"found feedback from MemPrompt: {old_feedback_str}\n")
+    old_feedback_api_part = create_message_part(old_feedback_str,1) # create system message
     messages = [filter_subject, filter_question, formatting, level_meaning, old_feedback_api_part]
     # print(messages)
     # send the formatting to GPT and get a response
@@ -336,13 +340,13 @@ def generate_proposed_question(filter_subject, filter_question, formatting, leve
         print_line()
         given_new_feedback = question_coll.give_feedback(proposed_question, id_token)
         print_line()
-        
+
         if given_new_feedback:
             num_attempts += 1 # increment num_attempts
             proposed_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token,num_attempts)  #TODO fix this
 
     # once the trainer is satisfied, or if the person is not a trainer,  return the question
-    return proposed_question 
+    return proposed_question
 
 
 # In[10]:
@@ -374,9 +378,9 @@ def get_student_timed_response():
 
 def respond_to_student_ans(question, student_answer, student_name, gpt_ans_explanation,get_all_student_related_mistakes):
     # take in the student_name's answer, and the topic
-    
+
     print(f"GPT's Answer: \n {gpt_ans_explanation}\n\n") # show GPT's answer
-    
+
     question_message = {
         "role": "system",
         "content": f"You are a math tutor. The question that the user is answering is '{question}'."
@@ -399,7 +403,7 @@ def respond_to_student_ans(question, student_answer, student_name, gpt_ans_expla
 
     return answer_res
 
-def grade_student_response(question, student_answer, student_name,solve_time, subtopic,answer_res):
+def grade_student_response(question, student_answer, student_name,solve_time, subtopic,answer_res, feedback):
 
     print("Evaluation: \n")
     # if the question being asked is simple we want to make sure the user does not have to give an explanation if non is needed
@@ -473,8 +477,12 @@ def grade_student_response(question, student_answer, student_name,solve_time, su
         {
             "role": "system",
             "content": f"Example response:{example_eval} "
+        },
+        {
+            "role": "system",
+            "content": f" remember the following when making the Evaluation: {feedback} "
         }
-        
+
     ]
     evaluation_res = get_response_text(evaluation_messages)
     print(evaluation_res)
@@ -730,7 +738,7 @@ def extract_metrics_scores(gpt_res):
 
     return metric_scores_string
     # make the string a JSON
-    # if this fails make this try again for a max of 3 attempts. 
+    # if this fails make this try again for a max of 3 attempts.
     # if it fails for a 4th time exit the function with an error
 
     # metric_scores_json = eval(metric_scores_string)
@@ -771,41 +779,51 @@ sj = eval(s)
 sj["question"]
 
 
-# In[6]:
-
+# In[41]:
 
 # receives students answer, and returns GPT's evaluations of their answer compared to GPT's answer
-def receive_and_evaluate(question, student, subtopic, student_answer_explanation, gpt_ans_explanation, user_type = "user", num_attempts = 0):
-    
+def receive_and_evaluate(question, student, subtopic, student_answer_explanation, gpt_ans_explanation, user_type = "user", num_attempts = 0, solve_time = -1):
+
+    if user_type == "trainer":
+        solve_time = gpt_solve_time_placeholder
     # Grade the student's response using the given question, student response, time, and subtopic
 
     # get the answer + explanation that GPT provides with python doing the math.
     # uses "memPrompt" like memory
     # gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
 
-    answer_res = respond_to_student_ans(question, student_answer_explanation, student.name, gpt_ans_explanation,student.mistakes)
+
+    answer_res = respond_to_student_ans(question, student_answer_explanation, student.name, gpt_ans_explanation,student.mistakes) # this also prints out GPT's final answer
+
+    eval_coll = memory.MemPrompt().evaluation
+
+    # get old feedback
+    old_feedback = eval_coll.get_feedback_w_query(answer_res) # get feedback, if None -> " "
+    old_feedback_str = f"{old_feedback}"
+    print(f"found feedback from MemPrompt: {old_feedback_str}\n")
 
     previous_explanations = " " # we start the previous explanations empty
-    student_clarification(question,answer_res,student_answer_explanation,previous_explanations) 
-    gpt_eval_res = grade_student_response(question, student_answer_explanation, student.name, gpt_solve_time_placeholder, subtopic.name,answer_res)
-    
+    student_clarification(question,answer_res,student_answer_explanation,previous_explanations)
+    gpt_eval_res = grade_student_response(question, student_answer_explanation, student.name, solve_time, subtopic.name,answer_res,old_feedback_str)
+
     if user_type == "trainer":
         print(f"GPT Answer + Explanation Evaluation Attempt {num_attempts}")
         print_line()
         # get evaluation collection from database
-        eval_coll = memory.MemPrompt().evaluation
-        
+
+
         given_new_feedback = eval_coll.give_feedback(question,student_answer_explanation,answer_res,gpt_eval_res)
         print_line()
-        
+
         if given_new_feedback:
             num_attempts += 1
-            gpt_eval_res = receive_and_evaluate(question, student, subtopic, student_answer_explanation, gpt_ans_explanation,"trainer", num_attempts)  
-        
+            gpt_eval_res = receive_and_evaluate(question, student, subtopic, student_answer_explanation, gpt_ans_explanation,"trainer", num_attempts)
+
     return gpt_eval_res
 
 
 # In[18]:
+
 
 
 # question: String
@@ -818,8 +836,8 @@ def receive_respond_and_update(question, student, subtopic):
     student_answer, solve_time = get_student_timed_response()
 
     gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
-    
-    gpt_eval_res, _ = receive_and_evaluate(question,student,subtopic, student_answer,gpt_ans_explanation) 
+
+    gpt_eval_res = receive_and_evaluate(question,student,subtopic, student_answer,gpt_ans_explanation, _, _,  solve_time)
 
     max_eval_attempts = 10 # if GPT messes up json format, the system can try another 9 times
     for attempt in range(max_eval_attempts):
@@ -831,14 +849,13 @@ def receive_respond_and_update(question, student, subtopic):
             return metric_updates
         except (json.JSONDecodeError, SyntaxError) as e:
             if attempt == max_eval_attempts - 1:
-                raise ValueError(f"Failed to parse metric scores JSON after {max_eval_attempts} attempts: {e}") 
+                raise ValueError(f"Failed to parse metric scores JSON after {max_eval_attempts} attempts: {e}")
             else:
                 print(f"Warning: Failed to parse metric scores JSON on attempt {attempt+1}. Retrying...")
 
-    # Should not reach here if attempts are successful  
+    # Should not reach here if attempts are successful
     return None
-   
-    
+
 
 
 # In[19]:
@@ -993,7 +1010,7 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 # Twenty dozen cups cost $1200 less than the total cost of
 # half a dozen plates sold at $6000 each.
 # Calculate the total cost of buying each cup.
-# ''' 
+# '''
 # Example from Self Reliant Paper
 
 # code_b = question_to_code_block()
@@ -1018,7 +1035,7 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 # memory.find_most_similar_memory(query)
 
 
-# In[25]:
+# In[ ]:
 
 
 # creates prompt with question and feedback if it exists
@@ -1101,84 +1118,74 @@ def update_ans_memory(question, answer, explanation):
         print("memory will not be updated")
 
 
-# In[26]:
+
+# In[42]:
 
 
 # GPT answer the question with the feedback memory json
-def get_answer_explanation_with_memory(question, num_attempts = 0):
+def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "user"):
     print(f"Generate Answer: Attempt {num_attempts} \n")
     print_line()
     # get the answer collection from database
     ans_coll = memory.MemPrompt().answers
     # get the feedback associated with the most similar question
-    _,similar_feedback = ans_coll.find_most_similar_memory(question) 
+    _,similar_feedback = ans_coll.find_most_similar_memory(question)
     # convert the list to a string
-    feedback_str = f"{similar_feedback}"
     # print(type(feedback_str))
-    print(f"found feedback from memory.json: {feedback_str}\n")
+    print_line()
+    feedback_str = f"{similar_feedback}"
+    print(f"found feedback from MemPrompt: {feedback_str}\n")
+    print_line()
     prompt = create_prompt(question,feedback_str)
 
     # get the GPT generated answer and explanation
     # ans_explanation: gives both the answer to the question and the explanation of the answer
     proposed_ans_explanation, proposed_ans = get_answer_and_explanation(prompt)
-    
-    # this function is only called in 'training mode', therefore no if statement is need to give feedback
-    given_new_feedback = ans_coll.give_feedback(question,proposed_ans,proposed_ans_explanation)
-    if given_new_feedback: # recursively call the function till the answer enough feedback is given to make the answer + explanation appropriate
-        num_attempts += 1
-        proposed_ans_explanation, proposed_ans = get_answer_explanation_with_memory(question, num_attempts)
-    
+
+    if user_type == "trainer":
+        given_new_feedback = ans_coll.give_feedback(question,proposed_ans,proposed_ans_explanation)
+        if given_new_feedback: # recursively call the function till the answer enough feedback is given to make the answer + explanation appropriate
+            num_attempts += 1
+            proposed_ans_explanation, proposed_ans = get_answer_explanation_with_memory(question, num_attempts)
+
     # return final answer and explanation
     return proposed_ans_explanation,proposed_ans
 
 
-# In[26]:
-
-
-
-
-
-# In[27]:
+# In[43]:
 
 
 # based off "MemPrompt: memory-assisted Prompt Editing with User Feedback" paper
 def mem_prompt_learning(): #todo fix this
     user_type = "trainer"
 
-    # get subtopic specific info 
+    # get subtopic specific info
     # id_token contains all of the info, separated by ': 's
     grade, education, topic_name, subtopic_name, id_token = get_subtopic_math_data(math_df_path)
-    
+
     # get memprompt collections of memory data
     # this database has 3 collections: 'questions', 'answers', and 'evaluation'
-    memprompt = memory.MemPrompt()    
-    
+    memprompt = memory.MemPrompt()
+
     # make subtopic and student objects we will use just for training
     # nothing will change in the students database collection on MongoDB
     subtopic_placeholder = students.Subtopic(subtopic_name, grade, education, topic_name)
     student_placeholder = students.Student("trainer") # placeholder for a student's name. This will NOT negatively affect the ask_question function
-    
+
     # get the question
     question = ask_question(student_placeholder,subtopic_placeholder,user_type, id_token)
     # find the question, or the most similar question that's in the database already
     # get the GPT generated answer and explanation
-    explanation, answer = get_answer_explanation_with_memory(question)
-
-    # print_line()
-    # print(f"Final Answer: \n {explanation}")
-    # print_line()
-    # print_line()
+    explanation, answer = get_answer_explanation_with_memory(question,0,"trainer")
 
     # update the memory.json file ( if the answer is already correct, then nothing in the database will change)
     # update_ans_memory(question, answer, explanation)
-    
     # perform evaluation
 
     gpt_eval = receive_and_evaluate(question, student_placeholder, subtopic_placeholder, answer, explanation,"trainer")
-    
-    
+
+
     # eval_coll = memprompt.evaluation
-    
     # eval_coll.give_feedback(question, answer,explanation,gpt_eval)
 
     # Ask the student if they want to be asked another question.
@@ -1202,13 +1209,13 @@ def student_learning():
     # get students database collection from MongoDB
     main_collection = "Section0"
     # students.py is an import
-    StudentCollection = students.StudentsCollection(main_collection) 
+    StudentCollection = students.StudentsCollection(main_collection)
     all_student_names = StudentCollection.current_student_names()
 
-    """Asks the student a question and updates their stats."""    
+    """Asks the student a question and updates their stats."""
     # get the student
     full_name = input("Enter your full name (Example: John Doe): \n")
-   
+
     # if student is in database, get the object
     if full_name in all_student_names:
         print(f"{full_name} is already in the database")
@@ -1217,10 +1224,10 @@ def student_learning():
         # if the student is not in the database, create the object
         print(f"{full_name} will be added to the database")
         student = students.Student(full_name) # initialize student
-    
+
     # pick the grade, education, topic_name, subtopic_name, and id_token
     grade, education, topic_name, subtopic_name, id_token = get_subtopic_math_data(math_df_path)
-    
+
     # find/create subtopic
     #TODO change functions to take in token
     if student.current_subtopic_ids(): # if current/student_names != NULL
@@ -1237,7 +1244,7 @@ def student_learning():
         subtopic = student.get_subtopic(subtopic.id)
 
     # ask the student a question
-    question = ask_question(student.name, subtopic, user_type)
+    question = ask_question(student.name, subtopic, user_type,id_token)
     # print(question)
     # receive answer,  calculate GPT answer, have a chance for the student to ask questions, evaluate student
     metric_updates = receive_respond_and_update(question, student, subtopic)
@@ -1247,12 +1254,12 @@ def student_learning():
     # add the json mistakes update
     # print(f"\n\n student mistakes: {student.mistakes} ")
     student.add_mistakes(metric_updates)
-    
+
     # remove old object and add new object ( updates object if it already is in database)
     if student.name in all_student_names:
         StudentCollection.delete_student(student)
     StudentCollection.add_student(student)
-    
+
     # StudentCollection
     # Ask the student if they want to be asked another question.
     answer = input("Do you want another question? 'yes' or 'no' ")
@@ -1268,20 +1275,20 @@ def student_learning():
 
 
 # def give_feedback(feedback_type):
-# 
+#
 #     question = ask_question(student.name, subtopic, user_type)
-#     
-#     
-# 
+#
+#
+#
 #     '''
 #     perform action
-#     
+#
 #     ask if you want to review action
-#     
-#     
+#
+#
 #     if you do want to review, update database
-#     
-#     
+#
+#
 #     '''
 
 
@@ -1317,7 +1324,7 @@ def main():
 # Check if the script is being run directly
 if __name__ == "__main__":
     main()
-    
+
 
 
 # In[64]:
@@ -1330,32 +1337,32 @@ if __name__ == "__main__":
 # In[65]:
 
 
-asd = """
-Evaluation of John D's Performance:
-
-Question: What is the sum of 325 + 187? Explain how you got your answer.
-- John D's answer is 23.
-
-1. Communication: 5/5
-- John D effectively communicated his answer, providing a clear response to the question.
-
-2. Interpretation: 5/5
-- John D correctly interpreted the question and attempted to find the sum of the given numbers.
-
-3. Computation: 2/5
-- John D's computation is incorrect as he added the digits in the ones place (5 + 7 = 12) and ignored the digits in the hundreds place.
-
-4. Conceptual Understanding: 3/5
-- John D demonstrated some understanding of addition but made a fundamental error in adding the numbers.
-
-5. Time Taken: 5/5
-- John D took 1.066 seconds to complete the question, which is a reasonable amount of time.
-
-Average Score: (5 + 5 + 2 + 3 + 5) / 5 = 4/5
-
-Explanation:
-John D performed well in communication, interpretation, and time management. However, his computation and conceptual understanding were lacking as he made a significant error in adding the numbers. It is crucial to pay attention to each place value when performing addition to avoid such mistakes. Overall, John D's performance was above average with a score of 4 out of 5.
-"""
+# asd = """
+# Evaluation of John D's Performance:
+#
+# Question: What is the sum of 325 + 187? Explain how you got your answer.
+# - John D's answer is 23.
+#
+# 1. Communication: 5/5
+# - John D effectively communicated his answer, providing a clear response to the question.
+#
+# 2. Interpretation: 5/5
+# - John D correctly interpreted the question and attempted to find the sum of the given numbers.
+#
+# 3. Computation: 2/5
+# - John D's computation is incorrect as he added the digits in the ones place (5 + 7 = 12) and ignored the digits in the hundreds place.
+#
+# 4. Conceptual Understanding: 3/5
+# - John D demonstrated some understanding of addition but made a fundamental error in adding the numbers.
+#
+# 5. Time Taken: 5/5
+# - John D took 1.066 seconds to complete the question, which is a reasonable amount of time.
+#
+# Average Score: (5 + 5 + 2 + 3 + 5) / 5 = 4/5
+#
+# Explanation:
+# John D performed well in communication, interpretation, and time management. However, his computation and conceptual understanding were lacking as he made a significant error in adding the numbers. It is crucial to pay attention to each place value when performing addition to avoid such mistakes. Overall, John D's performance was above average with a score of 4 out of 5.
+# """
 
 
 # In[65]:

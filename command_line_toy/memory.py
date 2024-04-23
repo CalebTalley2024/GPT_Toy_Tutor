@@ -22,7 +22,6 @@ class MemPrompt:
         self.questions = Memory_Collection("Q")
         self.answers = Memory_Collection("A")
         self.evaluation = Memory_Collection("E")
-        # self.json = list(client["Memory"]["Memory0"].find())
         
 class Memory_Collection:
     # creates collection object
@@ -123,7 +122,7 @@ class Memory_Collection:
         query = query.lower()
         # embed the query
         query_embed = model.encode(query)
-        print(query)
+        # print(query)
     
         # Get all of the questions that are in the database
         questions = self.get_queries()
@@ -185,10 +184,15 @@ class Memory_Collection:
         print_line()
         print_line()
         # first display the answer to the user
-        need_feedback = input(f"{self.type[:-1]}: above require any feedback: 'Yes'(1), or 'No'(0): ") # self.type[:-1]: plural -> singular
-        if need_feedback== 'Yes' or need_feedback == 1:
+        need_feedback = input(f"{self.type[:-1]}: above require any feedback: 'Y' for yes, 'N' for no: ") # self.type[:-1]: plural -> singular
+        if need_feedback.lower() == 'y':
             feedback = input("What needs to be improved in the analysis process?: ")
-            self.update_memory_feedback(question, feedback)
+            if self.type == "Questions": # query = subtopic info
+                self.update_memory_feedback(info_1, feedback)
+            elif self.type == "Answers":
+                self.update_memory_feedback(question, feedback)
+            elif self.type == "Evaluations":
+                self.update_memory_feedback(info_2, feedback) # query = GPT's Answer Response
             return True
         else:
             print("memory will not be updated")
