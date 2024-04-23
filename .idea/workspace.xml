@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="331376f1-0107-4f8d-b567-f90db61ebde5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/command_line_toy/subtopics.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/command_line_toy/learning.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/learning.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/command_line_toy/learning.py" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/learning.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/command_line_toy/memory.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/memory.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/command_line_toy/memory.py" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/memory.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/neural_exploration/data_preprocessing.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/command_line_toy/data_preprocessing.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

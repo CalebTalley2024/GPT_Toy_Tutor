@@ -8,7 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity as cos
 from sentence_transformers import SentenceTransformer as ST
 import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
-
+from learning import print_line
 
 # In[4]:
 
@@ -41,7 +41,7 @@ class Memory_Collection:
             self.collection = client["MemPrompt"]["Answers"]
             self.type = "Answers"
         elif mem_type == 'E': # query = (GPT answer + student answer) pair
-            self.collection = client["MemPrompt"]["Evaluation"]
+            self.collection = client["MemPrompt"]["Evaluations"]
             self.type = "Evaluations"
         else:
             ValueError("Invalid mem_type: should be 'A', 'Q', or 'E'")
@@ -167,25 +167,27 @@ class Memory_Collection:
 
     # returns whether or not feedback was needed
     def give_feedback(self, question, info_1, info_2 = None, info_3 = None): # TODO Test
-
+        print_line()
+        print_line()
         if self.type == "Questions": # query = question
-            print(f"grade|education|topic_name|subtopic_name: {info_1}")
+            print(f"Subtopic Info: Grade {info_1}")
             print(f"Proposed Question: {question}\n")
         elif self.type == "Answers": # query = question
-            print(f"Question: {question}\n")
-            print(f"Answer: {info_1}\n")
-            print(f"Explanation: {info_2}\n")
+            # print(f"Question: {question}\n")
+            # print(f"Proposed Answer: \n{info_1}\n")
+            print(f"Proposed Answer + Explanation: \n{info_2}\n")
         elif self.type == "Evaluations": # query = (GPT answer + student answer) pair
             print(f"Question: {question}\n")
             print(f"Answer: {info_1}\n")
             print(f"Answer Response: {info_2}\n")
             # print(f"Time: {info_3} seconds \n")
-            print(f"Evaluation: {info_3}\n")
-
+            print(f"Proposed Evaluation: {info_3}\n")
+        print_line()
+        print_line()
         # first display the answer to the user
-        need_feedback = input(f"{self.type[:-1]}: above require any feedback: 'Yes', or 'No'") # self.type[:-1]: plural -> singular
-        if need_feedback == 'Yes':
-            feedback = input("What needs to be improved in the analysis process?")
+        need_feedback = input(f"{self.type[:-1]}: above require any feedback: 'Yes'(1), or 'No'(0): ") # self.type[:-1]: plural -> singular
+        if need_feedback== 'Yes' or need_feedback == 1:
+            feedback = input("What needs to be improved in the analysis process?: ")
             self.update_memory_feedback(question, feedback)
             return True
         else:

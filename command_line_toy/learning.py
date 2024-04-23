@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[8]:
 
 
 from dotenv import load_dotenv
@@ -15,7 +15,7 @@ import memory
 import students
 
 
-# In[2]:
+# In[9]:
 
 
 # df = pd.read_csv('../data/GPT_tutor_topics(subtopics_included).csv')
@@ -32,12 +32,29 @@ gpt_solve_time_placeholder = 100 # TODO find better place holder
 # df = pd.read_csv(math_df_path)
 
 
-# In[3]:
+# In[12]:
+
+
+# prints horizontal line made of of 'len' worth of dashes
+def print_line(len = 150):
+    print("-" * len)
+    
+
+
+# In[14]:
+
+
+# print_line()
+
+
+# In[33]:
 
 
 # takes in path
 # outputs (grade, education, topic, subtopic)
 def get_subtopic_math_data(path = math_df_path):
+    print("Get The Subtopic:\n")
+    print_line()
     # math_df: dataframe with grade, education level, topic and subtopics
     math_df = pd.read_csv(path)
     grade = input("What grade are you in (Grade 1-12): \n")
@@ -70,7 +87,7 @@ def get_subtopic_math_data(path = math_df_path):
     
     for i, topic_name in enumerate(filt_df_topics):
         print(f"{i}: {topic_name} ")
-    topic_idx = input("Pick a topic by number: \n")
+    topic_idx = input("\nPick a topic by number: \n")
     while True:  # Loop for input validation
         try:
             topic_idx = int(topic_idx)
@@ -83,9 +100,17 @@ def get_subtopic_math_data(path = math_df_path):
         except ValueError:
             topic_idx = input("Invalid input. Please enter a number: ")
 
+    topic_name = filt_df[topic_idx][2] # gets the name from the column
     filt_df = filt_df[topic_idx][3:] # gets the row for the corresponding topic, remove rows for grade and education
-    print(f"\nSubtopics for {topic_name}")
+    
+    
+   
+    
+    
+    print(f"\nSubtopics for '{topic_name}'")
     print("------------------------------------------------------------------")
+
+    
     
     for i, subtopic_name in enumerate(filt_df): # go through columns
         print(f"{i}: {subtopic_name} ")
@@ -104,10 +129,20 @@ def get_subtopic_math_data(path = math_df_path):
 
         except ValueError: # Error: NaN
             subtopic_idx = input("Invalid input. Please enter a number between 0 and 4")
+            
+    subtopic_name = filt_df[subtopic_idx]
     # make the id token a collection of all of the math data        
     id_token = f"{grade}|{education}|{topic_name}|{subtopic_name}"
     
+    print_line()
+    
     return grade, education, topic_name, subtopic_name, id_token
+
+
+# In[35]:
+
+
+# get_subtopic_math_data()
 
 
 # In[4]:
@@ -265,11 +300,13 @@ def ask_question(student_name, subtopic_obj, user_type, id_token):
     filter_subject = filter_answers()
     filter_question = init_question(student_name, subtopic_obj, user_type) # level is picked here
     formatting, level_meaning = question_formatting()
-            
+
+   
     tutor_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token)    
     
     # here we print out the question GPT gives the student
-    print(f"{tutor_question}: \n\n")
+
+    # print(f"{tutor_question}: \n\n")
     # make sure the question is always in lower case
     tutor_question = tutor_question.lower()
     return tutor_question
@@ -281,11 +318,12 @@ def ask_question(student_name, subtopic_obj, user_type, id_token):
 # generate a proposed_question
 # Mempropmt option! If you are a trainer, you can give feedback to GPT tutor to have it ask better questions
 # final question returned is what the user will use
-# id_token is the query
-def generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token):
+# id_token is the query #TODO make this return the new question
+def generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token, num_attempts = 0):
     
     # access Mempropmt question collection
     question_coll = memory.MemPrompt().questions
+    
     old_feedback = question_coll.get_feedback_w_query(id_token) # get feedback, if None -> " "
     old_feedback_api_part = create_message_part(old_feedback,1) # create system message
     messages = [filter_subject, filter_question, formatting, level_meaning, old_feedback_api_part]
@@ -294,10 +332,14 @@ def generate_proposed_question(filter_subject, filter_question, formatting, leve
     proposed_question = get_response_text_w_temp(messages,question_temp)
 
     if user_type == "trainer":
+        print(f"Proposed Question, Attempt: {num_attempts}")
+        print_line()
         given_new_feedback = question_coll.give_feedback(proposed_question, id_token)
+        print_line()
         
         if given_new_feedback:
-            generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token)  #TODO fix this
+            num_attempts += 1 # increment num_attempts
+            proposed_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token,num_attempts)  #TODO fix this
 
     # once the trainer is satisfied, or if the person is not a trainer,  return the question
     return proposed_question 
@@ -729,33 +771,36 @@ sj = eval(s)
 sj["question"]
 
 
-# In[17]:
+# In[6]:
 
 
 # receives students answer, and returns GPT's evaluations of their answer compared to GPT's answer
-def receive_and_evaluate(question, student, subtopic, student_answer_explanation, user_type = "user"):
-
+def receive_and_evaluate(question, student, subtopic, student_answer_explanation, gpt_ans_explanation, user_type = "user", num_attempts = 0):
+    
     # Grade the student's response using the given question, student response, time, and subtopic
 
     # get the answer + explanation that GPT provides with python doing the math.
     # uses "memPrompt" like memory
-    gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
+    # gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
 
     answer_res = respond_to_student_ans(question, student_answer_explanation, student.name, gpt_ans_explanation,student.mistakes)
 
     previous_explanations = " " # we start the previous explanations empty
-    student_clarification(question,answer_res,student_answer_explanation,previous_explanations)
-    gpt_time = 60 
+    student_clarification(question,answer_res,student_answer_explanation,previous_explanations) 
     gpt_eval_res = grade_student_response(question, student_answer_explanation, student.name, gpt_solve_time_placeholder, subtopic.name,answer_res)
     
     if user_type == "trainer":
+        print(f"GPT Answer + Explanation Evaluation Attempt {num_attempts}")
+        print_line()
         # get evaluation collection from database
         eval_coll = memory.MemPrompt().evaluation
         
-        given_new_feedback = eval_coll.give_feedback(question,student_answer_explanation,answer_res,gpt_eval_res )
-
+        given_new_feedback = eval_coll.give_feedback(question,student_answer_explanation,answer_res,gpt_eval_res)
+        print_line()
+        
         if given_new_feedback:
-            receive_and_evaluate(question, student, subtopic, student_answer_explanation, user_type = "trainer")  
+            num_attempts += 1
+            gpt_eval_res = receive_and_evaluate(question, student, subtopic, student_answer_explanation, gpt_ans_explanation,"trainer", num_attempts)  
         
     return gpt_eval_res
 
@@ -772,7 +817,9 @@ def receive_respond_and_update(question, student, subtopic):
     # Get the student's response and the time taken
     student_answer, solve_time = get_student_timed_response()
 
-    gpt_eval_res, _ = receive_and_evaluate(question,student,subtopic, student_answer) 
+    gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
+    
+    gpt_eval_res, _ = receive_and_evaluate(question,student,subtopic, student_answer,gpt_ans_explanation) 
 
     max_eval_attempts = 10 # if GPT messes up json format, the system can try another 9 times
     for attempt in range(max_eval_attempts):
@@ -1044,7 +1091,7 @@ def update_ans_memory(question, answer, explanation):
     # first display the answer to the user
     print(f"Answer: {answer}")
     print(f"Explanation: {explanation}\n")
-    need_feedback = input("does the answer and explanation above require any feedback: 'Yes', or 'No'")
+    need_feedback = input("does the answer and explanation above require any feedback: 'Yes', or 'No': \n")
     if need_feedback == 'Yes':
         feedback = input("What needs to be improved in the analysis process?")
         # get answer collection from database
@@ -1058,7 +1105,9 @@ def update_ans_memory(question, answer, explanation):
 
 
 # GPT answer the question with the feedback memory json
-def get_answer_explanation_with_memory(question):
+def get_answer_explanation_with_memory(question, num_attempts = 0):
+    print(f"Generate Answer: Attempt {num_attempts} \n")
+    print_line()
     # get the answer collection from database
     ans_coll = memory.MemPrompt().answers
     # get the feedback associated with the most similar question
@@ -1076,7 +1125,8 @@ def get_answer_explanation_with_memory(question):
     # this function is only called in 'training mode', therefore no if statement is need to give feedback
     given_new_feedback = ans_coll.give_feedback(question,proposed_ans,proposed_ans_explanation)
     if given_new_feedback: # recursively call the function till the answer enough feedback is given to make the answer + explanation appropriate
-        get_answer_explanation_with_memory(question)
+        num_attempts += 1
+        proposed_ans_explanation, proposed_ans = get_answer_explanation_with_memory(question, num_attempts)
     
     # return final answer and explanation
     return proposed_ans_explanation,proposed_ans
@@ -1114,16 +1164,22 @@ def mem_prompt_learning(): #todo fix this
     # get the GPT generated answer and explanation
     explanation, answer = get_answer_explanation_with_memory(question)
 
+    # print_line()
+    # print(f"Final Answer: \n {explanation}")
+    # print_line()
+    # print_line()
+
     # update the memory.json file ( if the answer is already correct, then nothing in the database will change)
     # update_ans_memory(question, answer, explanation)
     
     # perform evaluation
 
-    gpt_eval = receive_and_evaluate(question, student_placeholder, subtopic_placeholder, answer)
+    gpt_eval = receive_and_evaluate(question, student_placeholder, subtopic_placeholder, answer, explanation,"trainer")
     
-    eval_coll = memprompt.evaluation
     
-    eval_coll.give_feedback(question, answer,explanation,gpt_eval)
+    # eval_coll = memprompt.evaluation
+    
+    # eval_coll.give_feedback(question, answer,explanation,gpt_eval)
 
     # Ask the student if they want to be asked another question.
     answer = input("Do you want another question? 'yes' or 'no' ")
