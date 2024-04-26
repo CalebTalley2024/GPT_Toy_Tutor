@@ -92,7 +92,7 @@ class Memory_Collection:
             elif self.type == "Answers": # query = question
                 self.collection = client["MemPrompt"]["Answers"]
             elif self.type == "Evaluations": # query = (GPT answer + student answer) pair
-                self.collection = client["MemPrompt"]["Evaluation"]
+                self.collection = client["MemPrompt"]["Evaluations"]
 
             print("the query and the feedback has been added to memory")
 

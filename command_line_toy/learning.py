@@ -115,9 +115,9 @@ def get_subtopic_math_data(path = math_df_path):
     for i, subtopic_name in enumerate(filt_df): # go through columns
         print(f"{i}: {subtopic_name} ")
 
-    subtopic_idx = input("Pick the number that matches your preferred subtopic: \n")
 
     while True:
+        subtopic_idx = input("Pick the number that matches your preferred subtopic: \n")
         try:
             subtopic_idx = int(subtopic_idx)
             if 0 <= subtopic_idx < len(filt_df): # in range
@@ -1124,6 +1124,10 @@ def update_ans_memory(question, answer, explanation):
 
 # GPT answer the question with the feedback memory json
 def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "user"):
+    if num_attempts == 0:
+        print_line()
+        "Starting Answer Generation"
+        print_line()
     print(f"Generate Answer: Attempt {num_attempts} \n")
     print_line()
     # get the answer collection from database
@@ -1146,7 +1150,7 @@ def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "
         given_new_feedback = ans_coll.give_feedback(question,proposed_ans,proposed_ans_explanation)
         if given_new_feedback: # recursively call the function till the answer enough feedback is given to make the answer + explanation appropriate
             num_attempts += 1
-            proposed_ans_explanation, proposed_ans = get_answer_explanation_with_memory(question, num_attempts)
+            proposed_ans_explanation, proposed_ans = get_answer_explanation_with_memory(question, num_attempts,"trainer")
 
     # return final answer and explanation
     return proposed_ans_explanation,proposed_ans
