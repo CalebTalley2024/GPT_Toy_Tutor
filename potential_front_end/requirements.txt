@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-sklearn
-"codeinterpreterapi[all]"
-asyncio
-pymongo
-
-
-python -m pip install pymongo
