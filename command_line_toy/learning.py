@@ -1187,6 +1187,55 @@ def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "
     return proposed_ans_explanation,proposed_ans
 
 
+# recommends question based on student data
+#TODO Edge case for empty database
+def auto_select_subtopic_opt(student):
+
+    student_data_str = json.dumps(student.to_json())
+
+    # weakness -->  find Topic/Subtopic Pair
+
+    # Pair --> Select Lvl
+
+    # Pair, Lvl --> Produce Question
+
+    # student info --> weakness/ no weaknesses
+    str_line = "-" * 25 # line to make distinction from data and next sentence
+    detect_weakness_str = f"This is the {student.name}'s data: {student_data_str }\n\n{str_line}. THere is Subtopics data and Mistakes data. Let me know if there are any mistakes and imperfect scores in my data. \n a Perfect Score = 5, Perfect Mistakes = '' "
+    detect_weakness_msg = create_message_part(detect_weakness_str,3)
+    weakness_messages = [detect_weakness_msg]
+    get_all_low_score_subtopics_txt = get_response_text_w_temp(weakness_messages,0)
+
+
+    subtopic_DB_txt =  f"Subtopics Database (format = grade | education | topic_name | subtopic name: {preprocessed_subtopics_DB}"
+
+    pick_topic_subtopic_pair_str = f"Here is all of the students data: {student_data_str}, Here are the students weak subtopics in detail: {get_all_low_score_subtopics_txt}. Based on his weak points and the database I gave above, Give me a sub topic in the following format: 'grade | education | topic_name | subtopic name| \n{str_line}. ONLY give me the subtopic ID in the form of 'grade | education | topic_name | subtopic name|', NOTHING ELSE"
+
+    subtopic_DB_msg = create_message_part(subtopic_DB_txt,1)
+
+    pick_topic_subtopic_msg = create_message_part(pick_topic_subtopic_pair_str,3)
+
+    pick_subtopic_messages = [subtopic_DB_msg,pick_topic_subtopic_msg]
+
+    picked_subtopic_id = get_response_text_w_temp(pick_subtopic_messages,0)
+
+
+
+    pick_level_str = f"This is the subtopic ID that you picked: {picked_subtopic_id}. These are my weaknesses: {get_all_low_score_subtopics_txt}. based on the subtopic and my previous weaknesses determine the best level of a question that I get for this subtopic. The level should be between 1 - 5, 1 being easiest and 5 being the hardest. ONLY  give me the number, NOTHING else"
+
+    pick_level_msg = create_message_part(pick_level_str,3)
+    picked_level = get_response_text_w_temp([pick_level_msg],0)
+
+    # subtopic ID ---> array (grade, education, topic, subtopic)
+    subtopic_id_list = picked_subtopic_id.split('|')
+    # print(subtopic_id_list)
+    grade = subtopic_id_list[0]
+    education = subtopic_id_list[1]
+    topic_name = subtopic_id_list[2]
+    subtopic_name = subtopic_id_list[3]
+
+    return grade,education, topic_name, subtopic_name, picked_subtopic_id, picked_level
+
 # In[181]:
 
 
@@ -1280,7 +1329,7 @@ def student_learning():
                 grade, education, topic_name, subtopic_name, id_token, diff_level = get_subtopic_math_data(math_df_path)
             elif subtopic_selection_type == '1':
                 print("Auto Option Selected\n")
-                grade, education, topic_name, subtopic_name, id_token, diff_level = auto_select_subtopic_opt(student, )
+                grade, education, topic_name, subtopic_name, id_token, diff_level = auto_select_subtopic_opt(student)
             else:
                 print("try again, only '0' and '1' are valid \n")
 
@@ -1376,55 +1425,6 @@ if __name__ == "__main__":
 
 # In[ ]:
 
-
-# recommends question based on student data
-#TODO Edge case for empty database
-def auto_select_subtopic_opt(student,is_first_question = False):
-
-    student_data_str = json.dumps(student.to_json())
-
-    # weakness -->  find Topic/Subtopic Pair
-
-    # Pair --> Select Lvl
-
-    # Pair, Lvl --> Produce Question
-
-    # student info --> weakness/ no weaknesses
-    str_line = "-" * 25 # line to make distinction from data and next sentence
-    detect_weakness_str = f"This is the {student.name}'s data: {student_data_str }\n\n{str_line}. THere is Subtopics data and Mistakes data. Let me know if there are any mistakes and imperfect scores in my data. \n a Perfect Score = 5, Perfect Mistakes = '' "
-    detect_weakness_msg = create_message_part(detect_weakness_str,3)
-    weakness_messages = [detect_weakness_msg]
-    get_all_low_score_subtopics_txt = get_response_text_w_temp(weakness_messages,0)
-
-
-    subtopic_DB_txt =  f"Subtopics Database (format = grade | education | topic_name | subtopic name: {preprocessed_subtopics_DB}"
-
-    pick_topic_subtopic_pair_str = f"Here is all of the students data: {student_data_str}, Here are the students weak subtopics in detail: {get_all_low_score_subtopics_txt}. Based on his weak points and the database I gave above, Give me a sub topic in the following format: 'grade | education | topic_name | subtopic name| \n{str_line}. ONLY give me the subtopic ID in the form of 'grade | education | topic_name | subtopic name|', NOTHING ELSE"
-
-    subtopic_DB_msg = create_message_part(subtopic_DB_txt,1)
-
-    pick_topic_subtopic_msg = create_message_part(pick_topic_subtopic_pair_str,3)
-
-    pick_subtopic_messages = [subtopic_DB_msg,pick_topic_subtopic_msg]
-
-    picked_subtopic_id = get_response_text_w_temp(pick_subtopic_messages,0)
-
-
-
-    pick_level_str = f"This is the subtopic ID that you picked: {picked_subtopic_id}. These are my weaknesses: {get_all_low_score_subtopics_txt}. based on the subtopic and my previous weaknesses determine the best level of a question that I get for this subtopic. The level should be between 1 - 5, 1 being easiest and 5 being the hardest. ONLY  give me the number, NOTHING else"
-
-    pick_level_msg = create_message_part(pick_level_str,3)
-    picked_level = get_response_text_w_temp([pick_level_msg],0)
-
-    # subtopic ID ---> array (grade, education, topic, subtopic)
-    subtopic_id_list = picked_subtopic_id.split('|')
-    # print(subtopic_id_list)
-    grade = subtopic_id_list[0]
-    education = subtopic_id_list[1]
-    topic_name = subtopic_id_list[2]
-    subtopic_name = subtopic_id_list[3]
-
-    return grade,education, topic_name, subtopic_name, picked_subtopic_id, picked_level
 
 
 # In[151]:
