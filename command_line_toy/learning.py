@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[152]:
 
 
 from dotenv import load_dotenv
@@ -15,7 +15,7 @@ import memory
 import students
 
 
-# In[9]:
+# In[153]:
 
 
 # df = pd.read_csv('../data/GPT_tutor_topics(subtopics_included).csv')
@@ -28,11 +28,12 @@ student_data_path = "../data/students.json"
 memory_path = "../data/memory.json"
 question_temp = 1 # temperature has to be between 0 and 2
 math_df_path = '../data/GPT_tutor_topics(subtopics_included).csv'
-gpt_solve_time_placeholder = 30 # TODO find better place holder
+preprocessed_subtopics_DB = pd.read_csv( 'subtopics.csv')
+gpt_solve_time_placeholder = 60 # TODO find better place holder
 # df = pd.read_csv(math_df_path)
 
 
-# In[12]:
+# In[154]:
 
 
 # prints horizontal line made of of 'len' worth of dashes
@@ -41,7 +42,7 @@ def print_line(len = 150):
 
 
 
-# In[33]:
+# In[155]:
 
 
 # print_line()
@@ -78,7 +79,7 @@ def get_subtopic_math_data(path = math_df_path):
     filt_df_topics = math_df.loc[math_df["Grade"] == grade]["Math Topic"].values # numpy array version
 
     print(f"\nTopics for Grade {grade}, Education Level: {education}")
-    print("------------------------------------------------------------------")
+    print_line()
 
     for i, topic_name in enumerate(filt_df_topics):
         print(f"{i}: {topic_name} ")
@@ -98,14 +99,8 @@ def get_subtopic_math_data(path = math_df_path):
     topic_name = filt_df[topic_idx][2] # gets the name from the column
     filt_df = filt_df[topic_idx][3:] # gets the row for the corresponding topic, remove rows for grade and education
 
-
-
-
-
     print(f"\nSubtopics for '{topic_name}'")
-    print("------------------------------------------------------------------")
-
-
+    print_line()
 
     for i, subtopic_name in enumerate(filt_df): # go through columns
         print(f"{i}: {subtopic_name} ")
@@ -130,18 +125,24 @@ def get_subtopic_math_data(path = math_df_path):
     # make the id token a collection of all of the math data
     id_token = f"{grade}|{education}|{topic_name}|{subtopic_name}"
 
+    level = -1 # level does not have to be part of the ID, the subtopic obj hashmap deals with different levels
+    while level > 5 or level < 1: # continue the loop till we have a valid level
+        level = int(input("Enter the question level you want between 1 and 5: \n"))
+        if level > 5 or level < 1:
+            print("Invalid level, pick again.")
+
     print_line()
 
-    return grade, education, topic_name, subtopic_name, id_token
+    return grade, education, topic_name, subtopic_name, id_token, level
 
 
-# In[35]:
+# In[156]:
 
 
 # get_subtopic_math_data()
 
 
-# In[4]:
+# In[157]:
 
 
 # data helper functions for JSON data
@@ -157,7 +158,7 @@ def post_ext_data(data, path):
         json.dump(data, f, indent=4)
 
 
-# In[5]:
+# In[158]:
 
 
 # helper functions
@@ -182,7 +183,13 @@ def get_response_text_w_temp(messages, temp):
     return res['choices'][0]['message']['content']
 
 
-# In[6]:
+# In[158]:
+
+
+
+
+
+# In[159]:
 
 
 # creates one part of the message that you send to the GPT API for a response.
@@ -205,7 +212,25 @@ def create_message_part(text, role_type):
     return message_part
 
 
-# In[7]:
+# In[159]:
+
+
+
+
+
+# In[159]:
+
+
+
+
+
+# In[159]:
+
+
+
+
+
+# In[160]:
 
 
 # helper functions for ask_question
@@ -221,24 +246,23 @@ def filter_answers():
     }
     return message
 
-
 # is_current_student: boolean
-def init_question(student_name, subtopic_obj, user_type):
+def init_question(student_name, subtopic_obj, level):
     # Prompt for level choice
-    if user_type == "user":
-        print("Hello User/Student! \npick the level of difficulty that you want.")
-    elif user_type == "trainer":
-        print("Hello Trainer. \n Since you are training GPT_Tutor, you will be able to pick the level of the question that you get")
-    else:
-        print("Invalid input")
+    # if user_type == "user":
+    #     print("Hello User/Student! \npick the level of difficulty that you want.")
+    # elif user_type == "trainer":
+    #     print("Hello Trainer. \n Since you are training GPT_Tutor, you will be able to pick the level of the question that you get")
+    # else:
+    #     print("Invalid input")
 
     # If statement based on the choice
-    valid = True
-    level = -1
-    while level > 5 or level < 1: # continue the loop till we have a valid level
-        level = int(input("Enter the question level you want between 1 and 5: \n"))
-        if level > 5 or level < 1:
-            print("Invalid level, pick again.")
+    # valid = True
+    # level = -1
+    # while level > 5 or level < 1: # continue the loop till we have a valid level
+    #     level = int(input("Enter the question level you want between 1 and 5: \n"))
+    #     if level > 5 or level < 1:
+    #         print("Invalid level, pick again.")
 
     # criteria: tell GPT scales for proficiency and level
     init = f"Based on {student_name}'s database, the student's skill level for {subtopic_obj.topic_name}, (specifically{subtopic_obj.name}) is {level}. Please give {student_name} a test question based on {subtopic_obj.topic_name}, (specifically{subtopic_obj.name}) and follow up with a sentence like 'Explain how you got your answer'. Adjust the difficulty of the question based on his skill level and proficiency score. DO NOT include any other words. Do not put the answer in the prompt."
@@ -290,15 +314,21 @@ def question_formatting():
     return formatting, level_meaning
 
 
-# In[8]:
+# In[185]:
+
+
+# filter_answers()
+
+
+# In[162]:
 
 
 # ask question to student
 # if in trainer mode, you can give feedback
-def ask_question(student_name, subtopic_obj, user_type, id_token):
+def ask_question(student_name, subtopic_obj, user_type, id_token,level):
     # make sure to only receive math answers and initialize the questions GPT will give
     filter_subject = filter_answers()
-    filter_question = init_question(student_name, subtopic_obj, user_type) # level is picked here
+    filter_question = init_question(student_name, subtopic_obj,level) # level is picked here
     formatting, level_meaning = question_formatting()
 
 
@@ -314,7 +344,7 @@ def ask_question(student_name, subtopic_obj, user_type, id_token):
     return tutor_question
 
 
-# In[9]:
+# In[186]:
 
 
 # generate a proposed_question
@@ -330,7 +360,7 @@ def generate_proposed_question(filter_subject, filter_question, formatting, leve
     similar_feedback_str = f"{similar_feedback}"
     print(f"found feedback from MemPrompt: {similar_feedback_str}\n")
     old_feedback_api_part = create_message_part(similar_feedback_str,1) # create system message
-    messages = [filter_subject, filter_question, formatting, level_meaning, old_feedback_api_part]
+    messages = [old_feedback_api_part, filter_subject, filter_question, formatting, level_meaning]
     # print(messages)
     # send the formatting to GPT and get a response
     proposed_question = get_response_text_w_temp(messages,question_temp)
@@ -349,13 +379,13 @@ def generate_proposed_question(filter_subject, filter_question, formatting, leve
     return proposed_question
 
 
-# In[10]:
+# In[164]:
 
 
 # ask_question("Alice", "2 digit division","user") #test
 
 
-# In[11]:
+# In[165]:
 
 
 # time: time it took the student to answer the question given from GPT
@@ -373,7 +403,7 @@ def get_student_timed_response():
     return student_res, end_time
 
 
-# In[12]:
+# In[166]:
 
 
 def respond_to_student_ans(question, student_answer, student_name, gpt_ans_explanation,get_all_student_related_mistakes):
@@ -495,7 +525,7 @@ def grade_student_response(question, student_answer, student_name,solve_time, su
     return evaluation_res
 
 
-# In[13]:
+# In[167]:
 
 
 # give students the ability to ask for clarification regarding a question they have about the answer to the question
@@ -553,7 +583,7 @@ def student_clarification(question, gpt_answer, student_answer, previous_explana
         print("Student questioning section has been completed.\nNext: Metric scores for performance\n")
 
 
-# In[14]:
+# In[168]:
 
 
 # question = "Solve for x: 2x + 5 = 15"
@@ -563,7 +593,7 @@ def student_clarification(question, gpt_answer, student_answer, previous_explana
 # student_clarification(question, gpt_answer, student_answer, previous_explanations)
 
 
-# In[15]:
+# In[169]:
 
 
 # gpt_res: evaluation on how the student answered the questions
@@ -746,7 +776,7 @@ def extract_metrics_scores(gpt_res):
 
 
 
-# In[16]:
+# In[170]:
 
 
 # s = """{
@@ -779,7 +809,7 @@ def extract_metrics_scores(gpt_res):
 # sj["question"]
 
 
-# In[41]:
+# In[171]:
 
 
 # receives students answer, and returns GPT's evaluations of their answer compared to GPT's answer
@@ -801,7 +831,7 @@ def receive_and_evaluate(question, student, subtopic, student_answer_explanation
     # get old feedback
     _, similar_feedback = eval_coll.find_most_similar_memory(answer_res) # get feedback, if None -> " "
     similar_feedback_str = f"{similar_feedback}"
-    print(f"found feedback from MemPrompt Evaluation: {similar_feedback_str}\n")
+    print(f"found feedback from MemPrompt: {similar_feedback_str}\n")
 
     previous_explanations = " " # we start the previous explanations empty
     student_clarification(question,answer_res,student_answer_explanation,previous_explanations)
@@ -823,7 +853,7 @@ def receive_and_evaluate(question, student, subtopic, student_answer_explanation
     return gpt_eval_res
 
 
-# In[44]:
+# In[172]:
 
 
 # question: String
@@ -859,14 +889,14 @@ def receive_respond_and_update(question, student, subtopic):
 
 
 
-# In[19]:
+# In[173]:
 
 
 #TODO make a test portion
 #TODO Evaluating AI/Student's Answer to question
 
 
-# In[20]:
+# In[174]:
 
 
 # converts question's format into python formatting
@@ -911,7 +941,7 @@ def backtrack_to_explanation(question, answer):
     return explanation
 
 
-# In[21]:
+# In[175]:
 
 
 #### TRYING TO run python code to get question right
@@ -1001,7 +1031,7 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 
 
 
-# In[22]:
+# In[176]:
 
 
 # q1 = "What is 0.96**5"
@@ -1023,20 +1053,20 @@ def self_refine_answer(question, answer): # based on "Self Refine" paper
 
 
 
-# In[23]:
+# In[177]:
 
 
 # 0.96**5
 
 
-# In[24]:
+# In[178]:
 
 
 # query = "Calculate the area of a rectangle with length 5 and width 8."
 # memory.find_most_similar_memory(query)
 
 
-# In[ ]:
+# In[179]:
 
 
 # creates prompt with question and feedback if it exists
@@ -1120,7 +1150,7 @@ def update_ans_memory(question, answer, explanation):
 
 
 
-# In[42]:
+# In[180]:
 
 
 # GPT answer the question with the feedback memory json
@@ -1157,7 +1187,7 @@ def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "
     return proposed_ans_explanation,proposed_ans
 
 
-# In[43]:
+# In[181]:
 
 
 # based off "MemPrompt: memory-assisted Prompt Editing with User Feedback" paper
@@ -1166,7 +1196,7 @@ def mem_prompt_learning(): #todo fix this
 
     # get subtopic specific info
     # id_token contains all of the info, separated by ': 's
-    grade, education, topic_name, subtopic_name, id_token = get_subtopic_math_data(math_df_path)
+    grade, education, topic_name, subtopic_name, id_token, diff_level = get_subtopic_math_data(math_df_path)
 
     # get memprompt collections of memory data
     # this database has 3 collections: 'questions', 'answers', and 'evaluation'
@@ -1178,7 +1208,7 @@ def mem_prompt_learning(): #todo fix this
     student_placeholder = students.Student("trainer") # placeholder for a student's name. This will NOT negatively affect the ask_question function
 
     # get the question
-    question = ask_question(student_placeholder,subtopic_placeholder,user_type, id_token)
+    question = ask_question(student_placeholder,subtopic_placeholder,user_type, id_token,diff_level)
     # find the question, or the most similar question that's in the database already
     # get the GPT generated answer and explanation
     explanation, answer = get_answer_explanation_with_memory(question,0,"trainer")
@@ -1205,7 +1235,7 @@ def mem_prompt_learning(): #todo fix this
         print("Thank you training GPT Tutor! Have a great day.")
 
 
-# In[28]:
+# In[182]:
 
 
 # asks student question, evaluates and updates their database
@@ -1230,8 +1260,33 @@ def student_learning():
         print(f"{full_name} will be added to the database")
         student = students.Student(full_name) # initialize student
 
-    # pick the grade, education, topic_name, subtopic_name, and id_token
-    grade, education, topic_name, subtopic_name, id_token = get_subtopic_math_data(math_df_path)
+    subtopic_selection_type = -1
+
+    # check if the subtopic array of the student obj is empty
+    empty_subtopic_array = False
+    if not student.subtopics: # if student.subtopics == []
+        empty_subtopic_array = True
+
+
+    if empty_subtopic_array:
+        print("This is your first question, so you will have to choose the Subtopic, Topic, etc\n")
+        grade, education, topic_name, subtopic_name, id_token, diff_level = get_subtopic_math_data(math_df_path)
+    else:
+
+        while subtopic_selection_type not in {'0','1'}:
+            subtopic_selection_type = input("Type '0' for manual subtopic selection \n Type '1' for auto subtopic selection\n")
+            if subtopic_selection_type == '0':
+                print("Manual Option Selected\n")
+                grade, education, topic_name, subtopic_name, id_token, diff_level = get_subtopic_math_data(math_df_path)
+            elif subtopic_selection_type == '1':
+                print("Auto Option Selected\n")
+                grade, education, topic_name, subtopic_name, id_token, diff_level = auto_select_subtopic_opt(student, )
+            else:
+                print("try again, only '0' and '1' are valid \n")
+
+
+    # pick the grade, education, topic_name, subtopic_name, id_token, and the difficulty level
+
 
     # find/create subtopic
     #TODO change functions to take in token
@@ -1249,15 +1304,15 @@ def student_learning():
         subtopic = student.get_subtopic(subtopic.id)
 
     # ask the student a question
-    question = ask_question(student.name, subtopic, user_type,id_token)
+    question = ask_question(student.name, subtopic, user_type,id_token,diff_level)
     # print(question)
     # receive answer,  calculate GPT answer, have a chance for the student to ask questions, evaluate student
     metric_updates = receive_respond_and_update(question, student, subtopic)
     # print(json.dumps(metric_updates, indent=2, sort_keys=True)) # print json
     # # update the database's subtopic data
-    # print_line(1000)
-    subtopic.update_subtopic(metric_updates)
-    # print_line(1000)
+    print_line(1000)
+    subtopic.update_subtopic(metric_updates) #TODO fix "    subtopic.update_subtopic(metric_updates) #TODO fix" Error
+    print_line(1000)
     # add the json mistakes update
     # print(f"\n\n student mistakes: {student.mistakes} ")
     student.add_mistakes(metric_updates)
@@ -1278,13 +1333,13 @@ def student_learning():
         print("Thank you for using GPT Tutor! Have a great day.")
 
 
-# In[29]:
+# In[182]:
 
 
 
 
 
-# In[30]:
+# In[183]:
 
 
 def main():
@@ -1310,11 +1365,76 @@ def main():
             valid = True
 
 
-# In[33]:
+# In[184]:
 
 
 # Check if the script is being run directly
 if __name__ == "__main__":
     main()
+
+
+
+# In[ ]:
+
+
+# recommends question based on student data
+#TODO Edge case for empty database
+def auto_select_subtopic_opt(student,is_first_question = False):
+
+    student_data_str = json.dumps(student.to_json())
+
+    # weakness -->  find Topic/Subtopic Pair
+
+    # Pair --> Select Lvl
+
+    # Pair, Lvl --> Produce Question
+
+    # student info --> weakness/ no weaknesses
+    str_line = "-" * 25 # line to make distinction from data and next sentence
+    detect_weakness_str = f"This is the {student.name}'s data: {student_data_str }\n\n{str_line}. THere is Subtopics data and Mistakes data. Let me know if there are any mistakes and imperfect scores in my data. \n a Perfect Score = 5, Perfect Mistakes = '' "
+    detect_weakness_msg = create_message_part(detect_weakness_str,3)
+    weakness_messages = [detect_weakness_msg]
+    get_all_low_score_subtopics_txt = get_response_text_w_temp(weakness_messages,0)
+
+
+    subtopic_DB_txt =  f"Subtopics Database (format = grade | education | topic_name | subtopic name: {preprocessed_subtopics_DB}"
+
+    pick_topic_subtopic_pair_str = f"Here is all of the students data: {student_data_str}, Here are the students weak subtopics in detail: {get_all_low_score_subtopics_txt}. Based on his weak points and the database I gave above, Give me a sub topic in the following format: 'grade | education | topic_name | subtopic name| \n{str_line}. ONLY give me the subtopic ID in the form of 'grade | education | topic_name | subtopic name|', NOTHING ELSE"
+
+    subtopic_DB_msg = create_message_part(subtopic_DB_txt,1)
+
+    pick_topic_subtopic_msg = create_message_part(pick_topic_subtopic_pair_str,3)
+
+    pick_subtopic_messages = [subtopic_DB_msg,pick_topic_subtopic_msg]
+
+    picked_subtopic_id = get_response_text_w_temp(pick_subtopic_messages,0)
+
+
+
+    pick_level_str = f"This is the subtopic ID that you picked: {picked_subtopic_id}. These are my weaknesses: {get_all_low_score_subtopics_txt}. based on the subtopic and my previous weaknesses determine the best level of a question that I get for this subtopic. The level should be between 1 - 5, 1 being easiest and 5 being the hardest. ONLY  give me the number, NOTHING else"
+
+    pick_level_msg = create_message_part(pick_level_str,3)
+    picked_level = get_response_text_w_temp([pick_level_msg],0)
+
+    # subtopic ID ---> array (grade, education, topic, subtopic)
+    subtopic_id_list = picked_subtopic_id.split('|')
+    # print(subtopic_id_list)
+    grade = subtopic_id_list[0]
+    education = subtopic_id_list[1]
+    topic_name = subtopic_id_list[2]
+    subtopic_name = subtopic_id_list[3]
+
+    return grade,education, topic_name, subtopic_name, picked_subtopic_id, picked_level
+
+
+# In[151]:
+
+
+
+
+
+# In[ ]:
+
+
 
 
