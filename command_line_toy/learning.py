@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[152]:
+# In[1]:
 
 
 from dotenv import load_dotenv
@@ -142,51 +142,25 @@ def get_subtopic_math_data(path = math_df_path):
 # get_subtopic_math_data()
 
 
-# In[157]:
-
-
-# data helper functions for JSON data
-# getting external data
-def get_ext_data(path):
-    with open(path, "r") as file:
-        database = json.load(file)
-    return database
-
-# post/update at the external data path
-def post_ext_data(data, path):
-    with open(path, 'w') as f:
-        json.dump(data, f, indent=4)
-
-
 # In[158]:
 
 
 # helper functions
 # API responses
-def get_response(messages):
-    res = openai.ChatCompletion.create(
-        model = model_35,
-        messages = messages,
-        temperature = 0 # make sure responses are deterministic/consistent
-    )
-    return res
-def get_response_text(messages):
-    res = get_response(messages)
-    return res['choices'][0]['message']['content']
 # be able to get the response and edit temperature
-def get_response_text_w_temp(messages, temp):
+def get_response(messages, temp = 0):
     res = openai.ChatCompletion.create(
         model = model_35,
         messages = messages,
         temperature = temp # make sure responses are deterministic/consistent
     )
+    return res
+
+# input: messages, temperature
+# returns response text
+def get_response_text(messages, temp = 0):
+    res = get_response(messages,temp)
     return res['choices'][0]['message']['content']
-
-
-# In[158]:
-
-
-
 
 
 # In[159]:
@@ -210,24 +184,6 @@ def create_message_part(text, role_type):
         "content": text
     }
     return message_part
-
-
-# In[159]:
-
-
-
-
-
-# In[159]:
-
-
-
-
-
-# In[159]:
-
-
-
 
 
 # In[160]:
@@ -363,7 +319,7 @@ def generate_proposed_question(filter_subject, filter_question, formatting, leve
     messages = [old_feedback_api_part, filter_subject, filter_question, formatting, level_meaning]
     # print(messages)
     # send the formatting to GPT and get a response
-    proposed_question = get_response_text_w_temp(messages,question_temp)
+    proposed_question = get_response_text(messages,question_temp)
 
     if user_type == "trainer":
         print(f"Proposed Question, Attempt: {num_attempts}")
@@ -583,16 +539,6 @@ def student_clarification(question, gpt_answer, student_answer, previous_explana
         print("Student questioning section has been completed.\nNext: Metric scores for performance\n")
 
 
-# In[168]:
-
-
-# question = "Solve for x: 2x + 5 = 15"
-# gpt_answer = "x = 5"
-# student_answer = "x = 6"
-# previous_explanations = ""
-# student_clarification(question, gpt_answer, student_answer, previous_explanations)
-
-
 # In[169]:
 
 
@@ -764,7 +710,7 @@ def extract_metrics_scores(gpt_res):
     messages = [instruction_msg, example_1_res_msg, example_1_res_ans, example_2_res_msg, example_2_res_ans]
 
     # get JSON data in form of response string
-    metric_scores_string = get_response_text_w_temp(messages, 0.3)  # temp  = 0.3
+    metric_scores_string = get_response_text(messages, 0.3)  # temp  = 0.3
 
     return metric_scores_string
     # make the string a JSON
@@ -774,39 +720,6 @@ def extract_metrics_scores(gpt_res):
     # metric_scores_json = eval(metric_scores_string)
     # return metric_scores_json
 
-
-
-# In[170]:
-
-
-# s = """{
-#     "question": "find x: 3x + 4 = 31",
-#     "subtopic":  "basic algebra",
-#     "level": 5,
-#     "overall_avg": 4.6,
-#     "communication": {
-#         "score": 4
-#     },
-#     "interpretation": {
-#         "score": 5
-#     },
-#     "computation": {
-#         "score": 5
-#     },
-#     "conceptual": {
-#         "score": 4
-#     },
-#     "time": {
-#         "score": 5,
-#         "seconds": 20
-#     },
-#     "mistakes": [
-#         "could have been more elaboration and clarity in his explanation",
-#         "explanation could have included more conceptual details to further enhance his understanding"
-#     ]
-# }"""
-# sj = eval(s)
-# sj["question"]
 
 
 # In[171]:
@@ -887,13 +800,6 @@ def receive_respond_and_update(question, student, subtopic):
     return None
 
 
-
-
-# In[173]:
-
-
-#TODO make a test portion
-#TODO Evaluating AI/Student's Answer to question
 
 
 # In[174]:
@@ -980,7 +886,7 @@ def question_to_code_block(question):
     return code_block
 # This function takes a code block as input and returns the value given when the python code is executed
 
-#TODO the use of "exec could possible be a security risk
+# the use of exec could possible be a security risk, but should not be here
 def code_block_to_variable(code_block):
     # Create an empty dictionary to store the variables that are created in the executed code.
     data = {}
@@ -1007,63 +913,6 @@ def explain_simple_math(question):
     explanation = backtrack_to_explanation(question,ans)
     # return explanation
     return ans
-
-#TODO Self Refine
-def self_refine_answer(question, answer): # based on "Self Refine" paper
-    # set up th question and answer so that GPT the reflect on it's own code
-    set_up_question = f"Here is the following question: {question}\n"
-    set_up_answer = f'''
-
-    Here is the python code that lead to an answer I was previously {answer}
-
-    '''
-    instructions = '''If one exists, identify the error in the code and refine the solution through an iterative process of introspection and feedback'''
-
-    question_msg = create_message_part(set_up_question,1)
-    answer_msg = create_message_part(set_up_answer,1)
-    instruction_msg = create_message_part(set_up_question,3)
-
-    messages = [question_msg,answer_msg,instruction_msg]
-    res = get_response_text(messages)
-
-    pass
-#TODO update memPropmt and studnet_learning to include Self_Refine
-
-
-
-# In[176]:
-
-
-# q1 = "What is 0.96**5"
-# q2 = "If x + y = 0, and y + 2 = 24, what are x and y"
-# q3 = "What is the derivative of  ln(x) with respect to x"
-# q4 = '''
-# Twenty dozen cups cost $1200 less than the total cost of
-# half a dozen plates sold at $6000 each.
-# Calculate the total cost of buying each cup.
-# '''
-# Example from Self Reliant Paper
-
-# code_b = question_to_code_block()
-# code_b
-#
-# ans1 = solve_simple_math(code_b)
-
-# explain_simple_math(q1)
-
-
-
-# In[177]:
-
-
-# 0.96**5
-
-
-# In[178]:
-
-
-# query = "Calculate the area of a rectangle with length 5 and width 8."
-# memory.find_most_similar_memory(query)
 
 
 # In[179]:
@@ -1103,37 +952,6 @@ def get_answer_and_explanation(prompt):
     answer = get_answer_from_explanation(explanation)
     return explanation, answer
 
-# give user feedback to perosn
-def send_feedback(question, feedback):
-    # get the memory.json data
-    data = get_ext_data(memory_path)
-    # Search for the question in the database
-    found_question = False
-
-    for entry in data:
-        if entry["Question"] == question:
-            # Add the feedback to the existing entry
-            print(entry["Feedback"])
-            entry["Feedback"].append(feedback)
-            found_question = True
-            print("feedback has been added to the question")
-            break
-
-    # If the question is not in the database, add a new JSON entry
-    if not found_question:
-        new_entry = {
-            "Question": question,
-            "Feedback": [feedback],
-        }
-        data.append(new_entry)
-        print("the question and the feedback has been added to memory")
-
-    # print("memory database has been updated")
-
-
-    # update the memory.json file with the new information
-    post_ext_data(data,memory_path)
-
 # will update the answer memory if the user spots a mistake that GPT has made in the answer and/or the explanation of the answer
 def update_ans_memory(question, answer, explanation):
     # first display the answer to the user
@@ -1150,7 +968,7 @@ def update_ans_memory(question, answer, explanation):
 
 
 
-# In[180]:
+# In[ ]:
 
 
 # GPT answer the question with the feedback memory json
@@ -1187,8 +1005,10 @@ def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "
     return proposed_ans_explanation,proposed_ans
 
 
+# In[180]:
+
+
 # recommends question based on student data
-#TODO Edge case for empty database
 def auto_select_subtopic_opt(student):
 
     student_data_str = json.dumps(student.to_json())
@@ -1204,7 +1024,7 @@ def auto_select_subtopic_opt(student):
     detect_weakness_str = f"This is the {student.name}'s data: {student_data_str }\n\n{str_line}. THere is Subtopics data and Mistakes data. Let me know if there are any mistakes and imperfect scores in my data. \n a Perfect Score = 5, Perfect Mistakes = '' "
     detect_weakness_msg = create_message_part(detect_weakness_str,3)
     weakness_messages = [detect_weakness_msg]
-    get_all_low_score_subtopics_txt = get_response_text_w_temp(weakness_messages,0)
+    get_all_low_score_subtopics_txt = get_response_text(weakness_messages,0)
 
 
     subtopic_DB_txt =  f"Subtopics Database (format = grade | education | topic_name | subtopic name: {preprocessed_subtopics_DB}"
@@ -1217,14 +1037,14 @@ def auto_select_subtopic_opt(student):
 
     pick_subtopic_messages = [subtopic_DB_msg,pick_topic_subtopic_msg]
 
-    picked_subtopic_id = get_response_text_w_temp(pick_subtopic_messages,0)
+    picked_subtopic_id = get_response_text(pick_subtopic_messages,0)
 
 
 
     pick_level_str = f"This is the subtopic ID that you picked: {picked_subtopic_id}. These are my weaknesses: {get_all_low_score_subtopics_txt}. based on the subtopic and my previous weaknesses determine the best level of a question that I get for this subtopic. The level should be between 1 - 5, 1 being easiest and 5 being the hardest. ONLY  give me the number, NOTHING else"
 
     pick_level_msg = create_message_part(pick_level_str,3)
-    picked_level = get_response_text_w_temp([pick_level_msg],0)
+    picked_level = get_response_text([pick_level_msg],0)
 
     # subtopic ID ---> array (grade, education, topic, subtopic)
     subtopic_id_list = picked_subtopic_id.split('|')
@@ -1235,6 +1055,7 @@ def auto_select_subtopic_opt(student):
     subtopic_name = subtopic_id_list[3]
 
     return grade,education, topic_name, subtopic_name, picked_subtopic_id, picked_level
+
 
 # In[181]:
 
@@ -1249,7 +1070,7 @@ def mem_prompt_learning(): #todo fix this
 
     # get memprompt collections of memory data
     # this database has 3 collections: 'questions', 'answers', and 'evaluation'
-    memprompt = memory.MemPrompt()
+    # memprompt = memory.MemPrompt()
 
     # make subtopic and student objects we will use just for training
     # nothing will change in the students database collection on MongoDB
@@ -1323,13 +1144,13 @@ def student_learning():
     else:
 
         while subtopic_selection_type not in {'0','1'}:
-            subtopic_selection_type = input("Type '0' for manual subtopic selection \n Type '1' for auto subtopic selection\n")
+            subtopic_selection_type = input("Type '0' for manual subtopic selection \nType '1' for auto subtopic selection\n")
             if subtopic_selection_type == '0':
                 print("Manual Option Selected\n")
                 grade, education, topic_name, subtopic_name, id_token, diff_level = get_subtopic_math_data(math_df_path)
             elif subtopic_selection_type == '1':
                 print("Auto Option Selected\n")
-                grade, education, topic_name, subtopic_name, id_token, diff_level = auto_select_subtopic_opt(student)
+                grade, education, topic_name, subtopic_name, id_token, diff_level = auto_select_subtopic_opt(student )
             else:
                 print("try again, only '0' and '1' are valid \n")
 
@@ -1420,21 +1241,5 @@ def main():
 # Check if the script is being run directly
 if __name__ == "__main__":
     main()
-
-
-
-# In[ ]:
-
-
-
-# In[151]:
-
-
-
-
-
-# In[ ]:
-
-
 
 
