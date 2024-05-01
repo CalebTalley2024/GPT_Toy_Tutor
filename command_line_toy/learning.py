@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[8]:
+# In[1]:
 
 
 from dotenv import load_dotenv
@@ -28,7 +28,7 @@ student_data_path = "../data/students.json"
 memory_path = "../data/memory.json"
 question_temp = 1 # temperature has to be between 0 and 2
 math_df_path = '../data/GPT_tutor_topics(subtopics_included).csv'
-gpt_solve_time_placeholder = 100 # TODO find better place holder
+gpt_solve_time_placeholder = 30 # TODO find better place holder
 # df = pd.read_csv(math_df_path)
 
 
@@ -41,15 +41,10 @@ def print_line(len = 150):
 
 
 
-# In[14]:
-
-
-# print_line()
-
-
 # In[33]:
 
 
+# print_line()
 # takes in path
 # outputs (grade, education, topic, subtopic)
 def get_subtopic_math_data(path = math_df_path):
@@ -115,6 +110,7 @@ def get_subtopic_math_data(path = math_df_path):
     for i, subtopic_name in enumerate(filt_df): # go through columns
         print(f"{i}: {subtopic_name} ")
 
+    # subtopic_idx = input("Pick the number that matches your preferred subtopic: \n")
 
     while True:
         subtopic_idx = input("Pick the number that matches your preferred subtopic: \n")
@@ -218,9 +214,13 @@ def create_message_part(text, role_type):
 def filter_answers():
     message = {
         "role": "system",
-        "content": f"I am a math teacher for Grade K-12 in the United States. I am using the GPT API to help me answer my students' math questions. Please only answer my questions about math, and do not respond to any questions that are not about math."
+        "content":
+            f"I am a math teacher for Grade K-12 in the United States. I am using the GPT API to help me answer my students' math questions. Please only answer my questions about math, and do not respond to any questions that are not about math."
+
+            f"Some math queries are wordy, such as Grade 12|High School|Exponential and logarithmic functions|Applications of exponential and logarithmic functions. Remember that this is also a math related query"
     }
     return message
+
 
 # is_current_student: boolean
 def init_question(student_name, subtopic_obj, user_type):
@@ -326,10 +326,10 @@ def generate_proposed_question(filter_subject, filter_question, formatting, leve
     # access Mempropmt question collection
     question_coll = memory.MemPrompt().questions
 
-    old_feedback = question_coll.get_feedback_w_query(id_token) # get feedback, if None -> " "
-    old_feedback_str = f"{old_feedback}"
-    print(f"found feedback from MemPrompt: {old_feedback_str}\n")
-    old_feedback_api_part = create_message_part(old_feedback_str,1) # create system message
+    similar_query, similar_feedback = question_coll.find_most_similar_memory(id_token) # get feedback, if None -> " "
+    similar_feedback_str = f"{similar_feedback}"
+    print(f"found feedback from MemPrompt: {similar_feedback_str}\n")
+    old_feedback_api_part = create_message_part(similar_feedback_str,1) # create system message
     messages = [filter_subject, filter_question, formatting, level_meaning, old_feedback_api_part]
     # print(messages)
     # send the formatting to GPT and get a response
@@ -749,37 +749,38 @@ def extract_metrics_scores(gpt_res):
 # In[16]:
 
 
-s = """{
-    "question": "find x: 3x + 4 = 31",
-    "subtopic":  "basic algebra",
-    "level": 5,
-    "overall_avg": 4.6,
-    "communication": {
-        "score": 4
-    },
-    "interpretation": {
-        "score": 5
-    },
-    "computation": {
-        "score": 5
-    },
-    "conceptual": {
-        "score": 4
-    },
-    "time": {
-        "score": 5,
-        "seconds": 20
-    },
-    "mistakes": [
-        "could have been more elaboration and clarity in his explanation",
-        "explanation could have included more conceptual details to further enhance his understanding"
-    ]
-}"""
-sj = eval(s)
-sj["question"]
+# s = """{
+#     "question": "find x: 3x + 4 = 31",
+#     "subtopic":  "basic algebra",
+#     "level": 5,
+#     "overall_avg": 4.6,
+#     "communication": {
+#         "score": 4
+#     },
+#     "interpretation": {
+#         "score": 5
+#     },
+#     "computation": {
+#         "score": 5
+#     },
+#     "conceptual": {
+#         "score": 4
+#     },
+#     "time": {
+#         "score": 5,
+#         "seconds": 20
+#     },
+#     "mistakes": [
+#         "could have been more elaboration and clarity in his explanation",
+#         "explanation could have included more conceptual details to further enhance his understanding"
+#     ]
+# }"""
+# sj = eval(s)
+# sj["question"]
 
 
 # In[41]:
+
 
 # receives students answer, and returns GPT's evaluations of their answer compared to GPT's answer
 def receive_and_evaluate(question, student, subtopic, student_answer_explanation, gpt_ans_explanation, user_type = "user", num_attempts = 0, solve_time = -1):
@@ -795,16 +796,16 @@ def receive_and_evaluate(question, student, subtopic, student_answer_explanation
 
     answer_res = respond_to_student_ans(question, student_answer_explanation, student.name, gpt_ans_explanation,student.mistakes) # this also prints out GPT's final answer
 
-    eval_coll = memory.MemPrompt().evaluation
+    eval_coll = memory.MemPrompt().evaluations
 
     # get old feedback
-    old_feedback = eval_coll.get_feedback_w_query(answer_res) # get feedback, if None -> " "
-    old_feedback_str = f"{old_feedback}"
-    print(f"found feedback from MemPrompt: {old_feedback_str}\n")
+    _, similar_feedback = eval_coll.find_most_similar_memory(answer_res) # get feedback, if None -> " "
+    similar_feedback_str = f"{similar_feedback}"
+    print(f"found feedback from MemPrompt Evaluation: {similar_feedback_str}\n")
 
     previous_explanations = " " # we start the previous explanations empty
     student_clarification(question,answer_res,student_answer_explanation,previous_explanations)
-    gpt_eval_res = grade_student_response(question, student_answer_explanation, student.name, solve_time, subtopic.name,answer_res,old_feedback_str)
+    gpt_eval_res = grade_student_response(question, student_answer_explanation, student.name, solve_time, subtopic.name,answer_res,similar_feedback)
 
     if user_type == "trainer":
         print(f"GPT Answer + Explanation Evaluation Attempt {num_attempts}")
@@ -822,8 +823,7 @@ def receive_and_evaluate(question, student, subtopic, student_answer_explanation
     return gpt_eval_res
 
 
-# In[18]:
-
+# In[44]:
 
 
 # question: String
@@ -855,6 +855,7 @@ def receive_respond_and_update(question, student, subtopic):
 
     # Should not reach here if attempts are successful
     return None
+
 
 
 
@@ -1189,7 +1190,7 @@ def mem_prompt_learning(): #todo fix this
     gpt_eval = receive_and_evaluate(question, student_placeholder, subtopic_placeholder, answer, explanation,"trainer")
 
 
-    # eval_coll = memprompt.evaluation
+    # eval_coll = memprompt.evaluations
     # eval_coll.give_feedback(question, answer,explanation,gpt_eval)
 
     # Ask the student if they want to be asked another question.
@@ -1254,7 +1255,9 @@ def student_learning():
     metric_updates = receive_respond_and_update(question, student, subtopic)
     # print(json.dumps(metric_updates, indent=2, sort_keys=True)) # print json
     # # update the database's subtopic data
+    # print_line(1000)
     subtopic.update_subtopic(metric_updates)
+    # print_line(1000)
     # add the json mistakes update
     # print(f"\n\n student mistakes: {student.mistakes} ")
     student.add_mistakes(metric_updates)
@@ -1278,22 +1281,7 @@ def student_learning():
 # In[29]:
 
 
-# def give_feedback(feedback_type):
-#
-#     question = ask_question(student.name, subtopic, user_type)
-#
-#
-#
-#     '''
-#     perform action
-#
-#     ask if you want to review action
-#
-#
-#     if you do want to review, update database
-#
-#
-#     '''
+
 
 
 # In[30]:
@@ -1328,65 +1316,5 @@ def main():
 # Check if the script is being run directly
 if __name__ == "__main__":
     main()
-
-
-
-# In[64]:
-
-
-# name: Kaleb Taley
-# issue: np array matrix
-
-
-# In[65]:
-
-
-# asd = """
-# Evaluation of John D's Performance:
-#
-# Question: What is the sum of 325 + 187? Explain how you got your answer.
-# - John D's answer is 23.
-#
-# 1. Communication: 5/5
-# - John D effectively communicated his answer, providing a clear response to the question.
-#
-# 2. Interpretation: 5/5
-# - John D correctly interpreted the question and attempted to find the sum of the given numbers.
-#
-# 3. Computation: 2/5
-# - John D's computation is incorrect as he added the digits in the ones place (5 + 7 = 12) and ignored the digits in the hundreds place.
-#
-# 4. Conceptual Understanding: 3/5
-# - John D demonstrated some understanding of addition but made a fundamental error in adding the numbers.
-#
-# 5. Time Taken: 5/5
-# - John D took 1.066 seconds to complete the question, which is a reasonable amount of time.
-#
-# Average Score: (5 + 5 + 2 + 3 + 5) / 5 = 4/5
-#
-# Explanation:
-# John D performed well in communication, interpretation, and time management. However, his computation and conceptual understanding were lacking as he made a significant error in adding the numbers. It is crucial to pay attention to each place value when performing addition to avoid such mistakes. Overall, John D's performance was above average with a score of 4 out of 5.
-# """
-
-
-# In[65]:
-
-
-
-
-
-# In[47]:
-
-
-# a = 0
-# while(True):
-#     print(a)
-#     a +=1
-#     extract_metrics_scores(asd)
-
-
-# In[ ]:
-
-
 
 

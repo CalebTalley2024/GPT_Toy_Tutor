@@ -10,6 +10,10 @@ from database_connect import client # gets MongoDB client, which gives access to
 
 
 # In[6]:
+# collection: data called from MongoDB
+# json: data in json
+def print_line(len = 150):
+    print("-" * len)
 
 
 # constants
@@ -164,6 +168,17 @@ class Student:
         self.mistakes = np.vstack((self.mistakes, row))  # Add within a list to preserve shape
         self.mistakes = self.mistakes.tolist() # np --> list
 
+    def to_json(self):
+        # create json with everything
+        student_json = {
+            "name": self.name,
+            # "grade": self.grade,
+            # convert subtopics to jsons before putting them into student.json
+            "subtopics": list(map(lambda subtopic: subtopic.to_json(), self.subtopics)),
+            "mistakes": self.mistakes
+        }
+        return student_json
+
 
 # In[29]:
 
@@ -195,11 +210,13 @@ class Subtopic:
     def update_subtopic(self, all_updates):
         # update the metrics
         # find hashmap value/metrics object that corresponds to the level/key
+        print_line(1000)
         key = all_updates["level"]
         if not self.metrics_map.get(key, None): # if None,
             # add default Metrics object if isn't one in the map at the key
             self.metrics_map[key] = Metrics()
         metrics_to_update = self.metrics_map[key]
+        print_line(1000)
         metrics_to_update.update(all_updates)
     # returns and prints subtopic data in a json
     def to_json(self):

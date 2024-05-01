@@ -8,9 +8,11 @@ from sklearn.metrics.pairwise import cosine_similarity as cos
 from sentence_transformers import SentenceTransformer as ST
 import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
-from learning import print_line
+# from learning import print_line
 
 # In[4]:
+def print_line(len = 150):
+    print("-" * len)
 
 
 # collection: data called from MongoDB
@@ -21,8 +23,8 @@ class MemPrompt:
         # different memprompt databases
         self.questions = Memory_Collection("Q")
         self.answers = Memory_Collection("A")
-        self.evaluation = Memory_Collection("E")
-        
+        self.evaluations = Memory_Collection("E")
+
 class Memory_Collection:
     # creates collection object
     # properties:  collection, type, json
@@ -44,12 +46,12 @@ class Memory_Collection:
             self.type = "Evaluations"
         else:
             ValueError("Invalid mem_type: should be 'A', 'Q', or 'E'")
-        
+
         self.json = list(self.collection.find()) # interpretable json of the data
 
     # the query is one of the following .....
-        # question
-        # (GPT answer + student answer) pair
+    # question
+    # (GPT answer + student answer) pair
     def get_memory_row(self, query):
         # returns memory that fits the question
         memory = list(self.collection.find({"Query": query}))
@@ -59,7 +61,7 @@ class Memory_Collection:
         return memory[0]
 
     # update feedback for single memory
-    # add memory if it is not already in the database    
+    # add memory if it is not already in the database
     # updates/adds memory row to collection on MongoDB
     def update_memory_feedback(self, query, feedback):
         if self.collection.count_documents({"query": query}) > 0:
@@ -83,10 +85,10 @@ class Memory_Collection:
                 "Feedback": [feedback],
             }
             self.collection.insert_one(new_memory) #update database on MongoDB
-            
+
             # reinitialilze the object collection (allows MongoDB to update the 'self' object
             # update the correct database
-            
+
             if self.type == "Questions": # query = question
                 self.collection = client["MemPrompt"]["Questions"]
             elif self.type == "Answers": # query = question
@@ -104,9 +106,9 @@ class Memory_Collection:
     # get the queries for the memory collection
     def get_queries(self):
         return [query["Query"] for query in self.json]
-    
+
         # get single memory by index
-    def get_feedback_at_index(self,i):
+    def get_row_at_index(self,i):
         return list(self.collection.find().skip(i).limit(1))[0]
 
     # Generate sentence embeddings for all the keys in the JSON file.
@@ -123,33 +125,45 @@ class Memory_Collection:
         # embed the query
         query_embed = model.encode(query)
         # print(query)
-    
-        # Get all of the questions that are in the database
-        questions = self.get_queries()
+        # Get all of the queries that are in the database
+        queries = self.get_queries()
+        if queries == []: # if there are no queries
+            return " ", [] # return empty string for query and empty array for response
+        
         # embed the memory's questions into vector representation
-        memory_embeds = model.encode(questions)
+        memory_embeds = model.encode(queries)
         # calculate the cosine similarity of each embed from memory compared to the query embed
         cos_sim = cos([query_embed], memory_embeds)
         # get the index of the question with the highest similarity score
         most_similar_query_index = int(np.argmax(cos_sim))
-    
-        most_similar_query = self.get_feedback_at_index(most_similar_query_index)["Query"]
-        most_similar_feedback = self.get_feedback_at_index(most_similar_query_index)["Feedback"]
-    
-        return most_similar_query, most_similar_feedback
-    
-    # return feedback associated with query, if you get an error, return empty string
-    def get_feedback_w_query(self,query):
-        try:
-            feedback = self.get_memory_row(query)["Query"]
-        except ValueError:
-            return ""
 
+        most_similar_row = self.get_row_at_index(most_similar_query_index)
+        if most_similar_row:
+            most_similar_query, most_similar_feedback = most_similar_row["Query"], most_similar_row["Feedback"]
+        else:
+            print("There is no feedback")
+            return "", ""
+
+        return most_similar_query, most_similar_feedback
+
+    # return feedback associated with query, if you get an error, return empty string
+    # def get_feedback_w_query(self,query):
+    #     try:
+    #         row = self.get_memory_row(query)
+    #         if row:
+    #             return row["Feedback"]
+    #         else:
+    #             print(f"no row for {query}")
+    #             return ""
+    #
+    #     except ValueError:
+    #         return ""
+    #
 
     # will update the memory if the user spots a mistake that GPT has made in the answer and/or the explanation of the answer
 
     # info_1 and info_2 are different for different memory types
-    # if question: 
+    # if question:
     #     - info_1 = grade|education|topic_name|subtopic_name
     #     - info_2 = None
     #     - info_3 = None
@@ -197,28 +211,4 @@ class Memory_Collection:
         else:
             print("memory will not be updated")
             return False
-
-
-# In[5]:
-
-
-# mem = MemPrompt()
-# a = mem.answers
-# a.find_most_similar_memory("What is 1 + 1")
-
-# a.update_memory_feedback("What is 1 + 1", " do not append the numbers")
-# a.get_queries()
-# a.json
-
-
-# In[10]:
-
-
-# a.get_memory_row("What is 1 +1")
-
-
-# In[ ]:
-
-
-
 
