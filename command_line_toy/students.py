@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[ ]:
 
 
 import json
@@ -9,29 +9,48 @@ import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
 
 
-# In[6]:
-# collection: data called from MongoDB
-# json: data in json
+# In[ ]:
+
+
+# prints dashed line,
+# len = # of dashes
 def print_line(len = 150):
     print("-" * len)
 
 
+
+# In[3]:
+
+
+# can be removed
+def solve_simple_math(question):
+    code_block = question_to_code_block(question)
+    print(f"python code: {code_block}")
+    ans = code_block_to_variable(code_block)
+    # convert answer into string
+    print(f"answer: {ans}")
+    return ans
+def explain_simple_math(question):
+    ans = solve_simple_math(question)
+    # print(f" this is {str(ans)}")
+    explanation = backtrack_to_explanation(question,ans)
+    # return explanation
+    return ans
+
+
+# In[4]:
+
+
+# collection: data section called from MongoDB Database
 # constants
 # default collection used
-main_collection = "Section0"
+main_collection = "Section0" # default collection for students
 
 
-# In[7]:
+# In[6]:
 
 
-# examples for visualizing jsons
-# format of 'all_updates':
-
-
-# In[80]:
-
-
-# recursively create JSON
+# recursively create dictionary from object (eg. Student, Metrics, Metric)
 def obj_to_dict(obj):
     # recursive calls run depending on if the call's obj is a list, dictionary, object, or primitive ( int, string, float, etc)
     if isinstance(obj, list): # if list
@@ -43,7 +62,7 @@ def obj_to_dict(obj):
     else: # if primitive
         return obj
 
-# converts dictionary into student object
+# dictionary -> Student Object
 def dict_to_student(dict_data):
     # print(dict_data)
     # Initialize student Object
@@ -56,7 +75,6 @@ def dict_to_student(dict_data):
         metrics_map_data = subtopic_data['metrics_map']
         for level, metrics_data in metrics_map_data.items(): # level is the key to the hashmap
             metrics_obj = Metrics()  # Create Metrics object for this level
-            # print(metrics_data.keys())
 
             # make metric object references
             overall_avg_obj = metrics_obj.overall_avg
@@ -76,17 +94,20 @@ def dict_to_student(dict_data):
                 if metric_type == "time":
                     metric.avg_time = metric_json["avg_time"]
                     metric.recent_times = metric_json["recent_times"]
-            # metrics_obj.update(metrics_info)  # Update metrics
             subtopic.metrics_map[level] = metrics_obj
 
+        # add subtopic to student
         student.add_subtopic(subtopic)
+
     student.mistakes = dict_data["mistakes"]
 
     return student  # Return the completed student object
 
-# In[28]:
+
+# In[7]:
 
 
+# Objects
 class StudentsCollection:
     def __init__(self, collection = "Section0"):
         database = client["Students"]
@@ -97,8 +118,11 @@ class StudentsCollection:
         student_dict = student.in_dict_format()
         self.collection.insert_one(student_dict)
         print(f"{student.name} has been added to collection: {self.name}")
-    # takes in student's name
-    # returns wanted student from database or None (student is not in database)
+
+
+    # Input: student's name
+    # Output: returns wanted student from database or None (student is not in database)
+    # #TODO there cannot be multiple kids with the same name unless this is changed to looking for specific ID
     def get_student(self, student_name):
         query = {"name": student_name}
         # Fetch the student data as a list
@@ -112,13 +136,14 @@ class StudentsCollection:
             student_obj = dict_to_student(student_dict)
             print("Student found:", student_obj.name)
             return student_obj
-
         except ValueError as e:
             print(e)
+
     def delete_student(self,student):
         query = {"name": student.name}
         self.collection.delete_one(query)
         print(f"{student.name} has been deleted from collection: {self.name}")
+
     # gets list of all students in collection
     def current_student_names(self):
         student_names = []
@@ -128,18 +153,24 @@ class StudentsCollection:
             student_names.append(datam["name"])
         return student_names
 
-class Student:
-    def __init__(self,name):
-        self.name = name
-        # self.grade = grade
-        self.subtopics = [] # array of Subtopic objects
-        self.mistakes = np.empty((0, 2)) # init as 0 x 2 array (Question, Mistakes) #TODO later add is_student_answer_correct
 
+
+# In[8]:
+
+
+class Student:
+    def __init__(self,name, grade = 0):
+        self.name = name
+        self.grade = grade
+        self.subtopics = [] # array of Subtopic objects
+        self.mistakes = np.empty((0, 2)) # init as 0 x 2 array (Question, Mistakes)
+
+    # student_obj -> dict
     def in_dict_format(self):
         return obj_to_dict(self)
 
     def current_subtopic_ids(self):
-        if not len(self.subtopics) == 0:
+        if not len (self.subtopics) == 0:
             return list(map(lambda subtopic: subtopic.id, self.subtopics))
         else:
             return []
@@ -180,46 +211,44 @@ class Student:
         return student_json
 
 
-# In[29]:
+# In[10]:
 
 
-# SC = StudentsCollection()
+SC = StudentsCollection()
 # Alice = SC.get_student("Alice Carter")
-# Alice.current_subtopic_names()
+Alice = Student("Alice")
 
 
-# In[29]:
+# In[12]:
 
 
 
 
 
-# In[30]:
+# In[9]:
 
 
 class Subtopic:
-    def __init__(self, name, grade, education, topic_name):
+    def __init__(self, name, grade, education_lvl, topic_name):
         # how many questions you answered for each of the 5 levels of a topic
         self.name = name # subtopic name
         self.grade = grade
-        self.education_lvl = education
+        self.education_lvl = education_lvl
         self.topic_name = topic_name # the subtopic is a subset of the overall topic
-        self.id = f"{grade}|{education}|{topic_name}|{name}"
-        self.metrics_map = {} # Hashmap of metrics (key: level, value: Metrics Object)
-    # all_updates: string or json or dictionary: updates that need to be done for metrics
+        self.id = f"{grade}|{education_lvl}|{topic_name}|{name}"
+        self.metrics_map = {} #Hashmap of metrics (key: level, value: Metrics Object)
+    # all_updates: string or json or dict : updates that need to be done for metrics
     def update_subtopic(self, all_updates):
         # update the metrics
         # find hashmap value/metrics object that corresponds to the level/key
-        print_line(1000)
         key = all_updates["level"]
         if not self.metrics_map.get(key, None): # if None,
             # add default Metrics object if isn't one in the map at the key
             self.metrics_map[key] = Metrics()
         metrics_to_update = self.metrics_map[key]
-        print_line(1000)
         metrics_to_update.update(all_updates)
     # returns and prints subtopic data in a json
-    def to_json(self):
+    def to_json(self): #TODO Edge case for empty database
         subtopic_json = {
             "name": self.name,
             "grade": self.grade,  # Include grade
@@ -227,7 +256,7 @@ class Subtopic:
             "topic_name": self.topic_name,  # Include topic name
             "metrics_map": {}
         }
-        # add all related metrics by level
+        #add all related metrics by level
         for level, metrics in self.metrics_map.items():
             subtopic_json["metrics_map"][level] = metrics.to_json()
 
@@ -236,7 +265,7 @@ class Subtopic:
         return subtopic_json  # Return the JSON string with indentation
 
 
-# In[61]:
+# In[10]:
 
 
 class Metrics:
@@ -248,7 +277,7 @@ class Metrics:
         self.conceptual = Metric("conceptual")
         self.time = Metric("time")
 
-    # returns dictionary of mistakes
+    # returns dict of mistakes
     # key = metric type, value: the actual mistakes
     def get_all_mistakes(self):
         mistakes = {}
@@ -290,12 +319,10 @@ class Metrics:
         return metrics_json
 
 
-# In[65]:
+# In[13]:
 
 
 class Metric:
-    # special types: time, overall_avg
-    # order of recent_times and related mistakes (oldest..... newest)
     def __init__(self, metric_type = None):
         self.metric_type = metric_type
         self.avg_score = 0
@@ -309,23 +336,22 @@ class Metric:
     # NOT USED to update overall_avg ( can only be updated in "Metrics" object
     # update: JSON
     # returns average score for metric
-    #TODO figure out `TypeError: 'int' object is not subscriptable` error
-    def update(self, update):
+    #TODO figure out rare`TypeError: 'int' object is not subscriptable` error
+    def update(self, update_json):
         # update num_questions
         self.num_questions += 1
         # get metrics previous scores and add new score,
         prev_scores = self.previous_scores
-
         # prev_scores.append(update["score"])
         # attempt to add the update to the previous score
         try:
-            prev_scores.append(update["score"]) # appending the score
+            prev_scores.append(update_json["score"]) # appending the score
         except (KeyError, TypeError) as e:
             # Handle the potential errors
             print(f"Error appending score: {e}\n")
-            print("--------------------------------------------------------")
-            print(update)
-            print("--------------------------------------------------------")
+            print_line()
+            print(update_json)
+            print_line()
             return -1
 
         # remove oldest score
@@ -333,18 +359,16 @@ class Metric:
             prev_scores.pop(0)
         # get the average
         self.avg_score = np.mean(prev_scores)
-
         # if there is  time attribute, update the time data:
         if hasattr(self, 'recent_times'):
             recent_times = self.recent_times
-            recent_times.append(update["seconds"])
+            recent_times.append(update_json["seconds"])
             if len(recent_times) == 6:
                 recent_times.pop(0)
             self.avg_time = np.mean(recent_times)
             # print("time average",self.avg_time)
             # print("recent times",self.recent_times)
         return self.avg_score
-
     def to_json(self):
         metric_json = {
             "avg_score": self.avg_score,
@@ -354,11 +378,21 @@ class Metric:
         if hasattr(self, "avg_time"):
             metric_json["avg_time"] = self.avg_time
             metric_json["recent_times"] = self.recent_times
-        # if not hasattr(self,"overall_avg"):
-        #     metric_json["previous_scores"]: self.previous_scores
-        # elif hasattr(self, "related_mistakes"):
-        #     metric_json["related_mistakes"] = self.related_mistakes
-
         return metric_json
 
-#%%
+
+# In[14]:
+
+
+coll = StudentsCollection()
+stud_name = "Caleb Talley"
+stud = coll.get_student(stud_name)
+
+stud = Student("KaX")
+
+
+# In[15]:
+
+
+stud.to_json()
+

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[1]:
 
 
 from sklearn.metrics.pairwise import cosine_similarity as cos
@@ -10,16 +10,22 @@ import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
 # from learning import print_line
 
-# In[4]:
-def print_line(len = 150):
-    print("-" * len)
+
+# In[2]:
 
 
 # collection: data called from MongoDB
 # json: data in json
+def print_line(len = 150):
+    print("-" * len)
+
+
+
+# In[6]:
+
+
 class MemPrompt:
     def __init__(self):
-        # self.collection = client["Memory"]["Memory0"]
         # different memprompt databases
         self.questions = Memory_Collection("Q")
         self.answers = Memory_Collection("A")
@@ -98,7 +104,7 @@ class Memory_Collection:
 
             print("the query and the feedback has been added to memory")
 
-            # update the json
+            # update the json (json is inside the list)
             self.json = list(self.collection.find())
 
         return 0
@@ -118,8 +124,6 @@ class Memory_Collection:
     def find_most_similar_memory(self, query):
         # get Memory in both collection and JSON format
         model = ST('all-MiniLM-L6-v2')
-        # Load the JSON file.
-        # memory_json = memories0.json
         # Preprocess the query to all lowercase.
         query = query.lower()
         # embed the query
@@ -129,14 +133,13 @@ class Memory_Collection:
         queries = self.get_queries()
         if queries == []: # if there are no queries
             return " ", [] # return empty string for query and empty array for response
-        
+
         # embed the memory's questions into vector representation
         memory_embeds = model.encode(queries)
         # calculate the cosine similarity of each embed from memory compared to the query embed
         cos_sim = cos([query_embed], memory_embeds)
         # get the index of the question with the highest similarity score
         most_similar_query_index = int(np.argmax(cos_sim))
-
         most_similar_row = self.get_row_at_index(most_similar_query_index)
         if most_similar_row:
             most_similar_query, most_similar_feedback = most_similar_row["Query"], most_similar_row["Feedback"]
@@ -145,20 +148,6 @@ class Memory_Collection:
             return "", ""
 
         return most_similar_query, most_similar_feedback
-
-    # return feedback associated with query, if you get an error, return empty string
-    # def get_feedback_w_query(self,query):
-    #     try:
-    #         row = self.get_memory_row(query)
-    #         if row:
-    #             return row["Feedback"]
-    #         else:
-    #             print(f"no row for {query}")
-    #             return ""
-    #
-    #     except ValueError:
-    #         return ""
-    #
 
     # will update the memory if the user spots a mistake that GPT has made in the answer and/or the explanation of the answer
 
