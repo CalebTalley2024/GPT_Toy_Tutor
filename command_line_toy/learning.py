@@ -15,7 +15,7 @@ import memory
 import students
 
 
-# In[8]:
+# In[ ]:
 
 
 # df = pd.read_csv('../data/GPT_tutor_topics(subtopics_included).csv')
@@ -26,16 +26,19 @@ model_35 = "gpt-3.5-turbo"
 question_temp = 1 # temperature of GPT, between 0 and 2
 math_df_path = '../data/GPT_tutor_topics(subtopics_included).csv'
 preprocessed_subtopics_DB = pd.read_csv( 'subtopics.csv')
-gpt_solve_time_placeholder = 60 # TODO find better place holder
+gpt_solve_time_placeholder = 30 # TODO find better place holder
 # df = pd.read_csv(math_df_path)
 
 
-# In[9]:
+# In[1]:
 
 
-# prints horizontal line made of of 'len' worth of dashes
+# prints horizontal line made of 'len' worth of dashes
 def print_line(len = 150):
-    print("-" * len)
+    if len == 0:
+        print("\n")
+    else:
+        print("-" * len)
 
 
 
@@ -46,8 +49,8 @@ def print_line(len = 150):
 # takes in path
 # outputs (grade, education, topic, subtopic)
 def get_subtopic_math_data(path = math_df_path):
-    print("Get The Subtopic:\n")
     print_line()
+    print("Get The Subtopic:\n")
     # math_df: dataframe with grade, education level, topic and subtopics
     math_df = pd.read_csv(path)
     grade = input("What grade are you in (Grade 1-12): \n")
@@ -76,7 +79,6 @@ def get_subtopic_math_data(path = math_df_path):
     filt_df_topics = math_df.loc[math_df["Grade"] == grade]["Math Topic"].values # numpy array version
 
     print(f"\nTopics for Grade {grade}, Education Level: {education}")
-    print_line()
 
     for i, topic_name in enumerate(filt_df_topics):
         print(f"{i}: {topic_name} ")
@@ -97,7 +99,6 @@ def get_subtopic_math_data(path = math_df_path):
     filt_df = filt_df[topic_idx][3:] # gets the row for the corresponding topic, remove rows for grade and education
 
     print(f"\nSubtopics for '{topic_name}'")
-    print_line()
 
     for i, subtopic_name in enumerate(filt_df): # go through columns
         print(f"{i}: {subtopic_name} ")
@@ -127,9 +128,6 @@ def get_subtopic_math_data(path = math_df_path):
         level = int(input("Enter the question level you want between 1 and 5: \n"))
         if level > 5 or level < 1:
             print("Invalid level, pick again.")
-
-    print_line()
-
     return grade, education, topic_name, subtopic_name, id_token, level
 
 
@@ -263,6 +261,8 @@ def question_formatting():
 # ask question to student
 # if in trainer mode, you can give feedback
 def ask_question(student_name, subtopic_obj, user_type, id_token,level):
+    print_line()
+    # print("Answer the Question:\n")
     # make sure to only receive math answers and initialize the questions GPT will give
     filter_subject = filter_answers()
     filter_question = init_question(student_name, subtopic_obj,level) # level is picked here
@@ -272,11 +272,10 @@ def ask_question(student_name, subtopic_obj, user_type, id_token,level):
     tutor_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token)
 
     # here we print out the question GPT gives the student
-    print_line()
     # make sure the question is always in lower case
     tutor_question = tutor_question.lower()
-    print(f"GPT's Question: \n{tutor_question}: \n\n")
-    print_line()
+    print(f"GPT's Question: \n{tutor_question}: \n")
+    # print_line()
 
     return tutor_question
 
@@ -287,7 +286,7 @@ def ask_question(student_name, subtopic_obj, user_type, id_token,level):
 # generate a proposed_question
 # Mempropmt option! If you are a trainer, you can give feedback to GPT tutor to have it ask better questions
 # final question returned is what the user will use
-# id_token is the query #TODO make this return the new question
+# id_token is the query
 def generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token, num_attempts = 0):
 
     # access Mempropmt question collection
@@ -295,22 +294,23 @@ def generate_proposed_question(filter_subject, filter_question, formatting, leve
 
     similar_query, similar_feedback = question_coll.find_most_similar_memory(id_token) # get feedback, if None -> " "
     similar_feedback_str = f"{similar_feedback}"
-    print(f"found feedback from MemPrompt: {similar_feedback_str}\n")
+    if user_type == "trainer":
+        print(f"found feedback from MemPrompt: {similar_feedback_str}\n")
     old_feedback_api_part = create_message_part(similar_feedback_str,1) # create system message
     messages = [old_feedback_api_part, filter_subject, filter_question, formatting, level_meaning]
     # print(messages)
     # send the formatting to GPT and get a response
     proposed_question = get_response_text(messages,question_temp)
 
-    if user_type == "trainer":
+    if user_type == "trainer": # recursive call for gaining feedback
+        print_line()
         print(f"Proposed Question, Attempt: {num_attempts}")
-        print_line()
         given_new_feedback = question_coll.give_feedback(proposed_question, id_token)
-        print_line()
+        # print_line()
 
         if given_new_feedback:
             num_attempts += 1 # increment num_attempts
-            proposed_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token,num_attempts)  #TODO fix this
+            proposed_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token,num_attempts)
 
     # once the trainer is satisfied, or if the person is not a trainer,  return the question
     return proposed_question
@@ -340,13 +340,16 @@ def get_student_timed_response():
     return student_res, end_time
 
 
-# In[20]:
+# In[ ]:
 
 
-def respond_to_student_ans(question, student_answer, student_name, gpt_ans_explanation,get_all_student_related_mistakes):
+# compares student answer to GPT's answer, let student know what they got wrong
+# also considers student mistakes
+def respond_to_student_ans(question, student_answer, student_name, gpt_ans_explanation,get_all_student_related_mistakes, user_type):
     # take in the student_name's answer, and the topic
-
-    print(f"GPT's Answer: \n {gpt_ans_explanation}\n\n") # show GPT's answer
+    print_line()
+    if user_type == "trainer":
+        print(f"GPT's Answer: \n {gpt_ans_explanation}\n") # show GPT's answer
 
     question_message = {
         "role": "system",
@@ -366,13 +369,18 @@ def respond_to_student_ans(question, student_answer, student_name, gpt_ans_expla
 
     answer_res = get_response_text(init_response_messages)
 
-    print(f" GPT initial response to {student_name}'s answer: \n {answer_res}\n\n")
+    print(f"GPT initial response to {student_name}'s answer: \n{answer_res}\n")
 
     return answer_res
 
-def grade_student_response(question, student_answer, student_name,solve_time, subtopic,answer_res, feedback):
 
-    print("Evaluation: \n")
+# In[20]:
+
+
+# grades student response
+def grade_student_response(question, student_answer, student_name,solve_time, subtopic,answer_res, feedback):
+    print_line()
+    print("Evaluation on Student Performance: \n")
     # if the question being asked is simple we want to make sure the user does not have to give an explanation if non is needed
     # here are examples of questions that don't need  much explanation
     simple_question_examples = """
@@ -453,23 +461,19 @@ def grade_student_response(question, student_answer, student_name,solve_time, su
     ]
     evaluation_res = get_response_text(evaluation_messages)
     print(evaluation_res)
-    print(" \n\n")
-    # metrics_scores = extract_metrics_scores(evaluation_res)
-
-    # print(metrics_scores)
-    # return  metrics_scores
+    print("\n")
 
     return evaluation_res
 
 
-# In[21]:
+# In[1]:
 
 
 # give students the ability to ask for clarification regarding a question they have about the answer to the question
 def get_gpt_clarification (question, gpt_answer, student_answer, previous_explanations):
     # ask the student if they need clarification on a question.
-    # if they do. give them a chance to ask the question
-    # if they dont, then dont provide anything
+    # if they do. give them a chance to ask a question about GPT's Answer
+    # if they don't, then don't provide anything
     # make sure the response safe and only related to mathematics
     only_answer_math = f'''I am a math teacher for Grade K-12 in the United States. I am using the GPT API to help me answer my students' math questions. Please only answer my questions about math, and do not respond to any questions that are not about math.'''
 
@@ -487,13 +491,14 @@ def get_gpt_clarification (question, gpt_answer, student_answer, previous_explan
 
     # create message for the student's question on the math problem
     student_question = input("Write down what you want clarification on: \n")
+    print(0) # empty line
     student_question_msg = create_message_part(student_question,3)
 
     msgs = [only_answer_math_msg,previous_info_msg,student_question_msg]
 
     GPT_res = get_response_text(msgs)
 
-    print("\n")
+    print("\n\n")
     print(GPT_res)
 
     return GPT_res
@@ -503,7 +508,7 @@ def get_gpt_clarification (question, gpt_answer, student_answer, previous_explan
 def student_clarification(question, gpt_answer, student_answer, previous_explanations):
     # Ask the student if they want clarification about the answers given
     need_clarification = input("If you want clarification, type 'Yes'. Type anything else to got to the evaluation section\n")
-
+    print_line(0)
     need_clarification = need_clarification.lower()
     if need_clarification == "yes".lower():
         # Get clarification from the student using the get_gpt_clarification function
@@ -518,14 +523,13 @@ def student_clarification(question, gpt_answer, student_answer, previous_explana
         print("Student questioning section has been completed.\nNext: Metric scores for performance\n")
 
 
-# In[22]:
+# In[1]:
 
 
 # gpt_res: evaluation on how the student answered the questions
-#TODO add questions to examples and json
-#TODO change how I store mistakes
-#TODO add if the answer is correct
-#TODO figure out eval() error from GPT not formatting JSON correctly
+#TODO Suggestion: add questions to examples and json
+#TODO Suggestion: add if the answer is correct
+#TODO Suggestion: figure out eval() error from GPT not formatting JSON correctly
 def extract_metrics_scores(gpt_res):
     # print(gpt_res)
     instruction = f'''
@@ -590,7 +594,7 @@ def extract_metrics_scores(gpt_res):
         Explanation:
         Allan's performance was generally strong across all skill metrics. He effectively communicated his answer and demonstrated a good understanding of the concept. However, his explanation could have been more detailed and comprehensive, which affected his score in the communication and conceptual understanding categories. Overall, Allan performed well and achieved a high average score of 4.6 out of 5.
         """
-    # example output #TODO figure out what you are going to send back (make diagram?)
+
     example_1_res = """{ 
     "question": "find x: 3x + 4 = 31",
     "subtopic":  "basic algebra",
@@ -649,7 +653,7 @@ def extract_metrics_scores(gpt_res):
     Explanation:
     Alice's performance in this question is below average. She struggled with communication, interpretation, computation, and conceptual understanding. Her answer was incorrect, and she did not follow the correct method of subtraction without regrouping. Alice needs further practice and clarification on the concept of subtraction to improve her skills in this area.
     """
-    # mistakes string separates separate mistakes with commas, NOT an array
+    # mistakes is a string, with commas separating different mistakes, NOT an array
     example_2_res = """ {
         "question": "A bakery has 86 cupcakes. They sell 59 cupcakes. How many cupcakes do they have left? Solve this without regrouping (borrowing). Show your work.",
         "subtopic": "word problem without regrouping",
@@ -692,13 +696,6 @@ def extract_metrics_scores(gpt_res):
     metric_scores_string = get_response_text(messages, 0.3)  # temp  = 0.3
 
     return metric_scores_string
-    # make the string a JSON
-    # if this fails make this try again for a max of 3 attempts.
-    # if it fails for a 4th time exit the function with an error
-
-    # metric_scores_json = eval(metric_scores_string)
-    # return metric_scores_json
-
 
 
 # In[23]:
@@ -707,36 +704,33 @@ def extract_metrics_scores(gpt_res):
 # receives students answer, and returns GPT's evaluations of their answer compared to GPT's answer
 def receive_and_evaluate(question, student, subtopic, student_answer_explanation, gpt_ans_explanation, user_type = "user", num_attempts = 0, solve_time = gpt_solve_time_placeholder):
 
-    if user_type == "trainer":
-        solve_time = solve_time
+    # if user_type == "trainer":
+    #     solve_time = solve_time
     # Grade the student's response using the given question, student response, time, and subtopic
 
     # get the answer + explanation that GPT provides with python doing the math.
     # uses "memPrompt" like memory
-    # gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
-
-
-    answer_res = respond_to_student_ans(question, student_answer_explanation, student.name, gpt_ans_explanation,student.mistakes) # this also prints out GPT's final answer
+    answer_res = respond_to_student_ans(question, student_answer_explanation, student.name, gpt_ans_explanation,student.mistakes, user_type) # this also prints out GPT's final answer
 
     eval_coll = memory.MemPrompt().evaluations
 
     # get old feedback
     _, similar_feedback = eval_coll.find_most_similar_memory(answer_res) # get feedback, if None -> " "
     similar_feedback_str = f"{similar_feedback}"
-    print(f"found feedback from MemPrompt: {similar_feedback_str}\n")
+    if user_type == "trainer":
+        print(f"found feedback from MemPrompt: {similar_feedback_str}\n")
 
-    previous_explanations = " " # we start the previous explanations empty
+    previous_explanations = " " # string is initially empty b/c the student has not asked any clarifying questions yet
     student_clarification(question,answer_res,student_answer_explanation,previous_explanations)
     gpt_eval_res = grade_student_response(question, student_answer_explanation, student.name, solve_time, subtopic.name,answer_res,similar_feedback)
 
-    if user_type == "trainer":
-        print(f"GPT Answer + Explanation Evaluation Attempt {num_attempts}")
+    if user_type == "trainer":  # recursive call for gaining feedback
         print_line()
+        print(f"GPT Answer + Explanation Evaluation: Attempt {num_attempts}")
         # get evaluation collection from database
 
-
         given_new_feedback = eval_coll.give_feedback(question,student_answer_explanation,answer_res,gpt_eval_res)
-        print_line()
+        # print_line()
 
         if given_new_feedback:
             num_attempts += 1
@@ -752,7 +746,7 @@ def receive_and_evaluate(question, student, subtopic, student_answer_explanation
 # student, subtopic: custom Objects
 # all_student_subtopic_mistakes: dictionary
 # receive student's answer, respond to their answer, and update their statistics
-# returns metric updates, non_formatted GPT evaluation of student, and the solve time #TODO if you have time, return non_formttted evaluation and solve time in different function
+# returns metric updates, non_formatted GPT evaluation of student, and the solve time
 def receive_respond_and_update(question, student, subtopic):
     # Get the student's response and the time taken
     student_answer, solve_time = get_student_timed_response()
@@ -776,7 +770,8 @@ def receive_respond_and_update(question, student, subtopic):
                 print(f"Warning: Failed to parse metric scores JSON on attempt {attempt+1}. Retrying...")
 
     # Should not reach here if attempts are successful
-    return None
+    # print_line()
+    return -1
 
 
 
@@ -878,15 +873,17 @@ def code_block_to_variable(code_block):
 
     return var
 
-def solve_math(question):
+def solve_math(question, user_type = "user"):
     code_block = question_to_code_block(question)
-    print(f"python code: {code_block}")
+    if user_type == "trainer":
+        print_line()
+        print(f"python code: {code_block}")
     ans = code_block_to_variable(code_block)
     # convert answer into string
-    print(f"answer: {ans}")
+    # print(f"answer: {ans}")
 
     explanation = backtrack_to_explanation(question,ans)
-    print(f"Explanation: {explanation}")
+    # print(f"Explanation: {explanation}")
     return explanation, ans
 
 
@@ -956,30 +953,32 @@ def update_ans_memory(question, answer, explanation):
 
 # GPT answer the question with the feedback memory json
 def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "user"):
+
     if num_attempts == 0:
-        print_line()
         "Starting Answer Generation"
+        # print_line()
+    if user_type == "trainer":
         print_line()
-    print(f"Generate Answer: Attempt {num_attempts} \n")
-    print_line()
+        print(f"Generate Answer: Attempt {num_attempts} \n")
+    # print_line()
     # get the answer collection from database
     ans_coll = memory.MemPrompt().answers
     # get the feedback associated with the most similar question
     _,similar_feedback = ans_coll.find_most_similar_memory(question)
     # convert the list to a string
     # print(type(feedback_str))
-    print_line()
+
     feedback_str = f"{similar_feedback}"
-    print(f"found feedback from MemPrompt: {feedback_str}\n")
-    print_line()
+    if user_type == "trainer":
+        print(f"found feedback from MemPrompt: {feedback_str}\n")
+
     question_w_feedback = f"{feedback_str, question}"
     # prompt = create_prompt(question,feedback_str)
-
     # get the GPT generated answer and explanation
     # ans_explanation: gives both the answer to the question and the explanation of the answer
     proposed_ans_explanation, proposed_ans = get_answer_and_explanation(question_w_feedback)
 
-    if user_type == "trainer":
+    if user_type == "trainer": # recursive call for gaining feedback
         given_new_feedback = ans_coll.give_feedback(question,proposed_ans,proposed_ans_explanation)
         if given_new_feedback: # recursively call the function till the answer enough feedback is given to make the answer + explanation appropriate
             num_attempts += 1
@@ -1045,7 +1044,7 @@ def auto_select_subtopic_opt(student):
 
 
 # based off "MemPrompt: memory-assisted Prompt Editing with User Feedback" paper
-def mem_prompt_learning(): #todo fix this
+def mem_prompt_learning():
     user_type = "trainer"
     # get subtopic specific info
     # id_token contains all of the info, separated by ': 's
@@ -1138,7 +1137,6 @@ def student_learning():
 
 
     # find/create subtopic
-    #TODO change functions to take in token
     if student.current_subtopic_ids(): # if current/student_names != NULL
         if id_token in student.current_subtopic_ids():
             subtopic = student.get_subtopic(id_token)
@@ -1157,11 +1155,12 @@ def student_learning():
     # print(question)
     # receive answer,  calculate GPT answer, have a chance for the student to ask questions, evaluate student
     metric_updates = receive_respond_and_update(question, student, subtopic)
+
     # print(json.dumps(metric_updates, indent=2, sort_keys=True)) # print json
     # # update the database's subtopic data
-    print_line(1000)
-    subtopic.update_subtopic(metric_updates) #TODO fix "    subtopic.update_subtopic(metric_updates) #TODO fix" Error
-    print_line(1000)
+    # print_line(1000)
+    subtopic.update_subtopic(metric_updates)
+    # print_line(1000)
     # add the json mistakes update
     # print(f"\n\n student mistakes: {student.mistakes} ")
     student.add_mistakes(metric_updates)
@@ -1200,8 +1199,10 @@ def main():
     # Trainer: Testing GPT_Tutors knowledge ( ~ to MemPrompt paper)
     valid = False # valid if you enter either 'user' or 'trainer'
     while not valid:
+        print_line()
         usage_type = input("Type 'user' or `1` if you use GPT to learn. \nType 'trainer' or `2` if you want to train GPT_Tutor.\nType anything else to exit the program\n")
         usage_type = usage_type.lower() # makes sure letters are in lowercase
+        print_line()
         if usage_type == "user" or usage_type == "1":
             valid = True
             # Start the learning process.

@@ -1,0 +1,5 @@
+- https://www.youtube.com/watch?v=hjnVLfvhN0Q&ab_channel=Dr.DataScience
+- remove unnecessary MongoDB collections
+- make sure everything works
+- remove todos
+- removed unused functions

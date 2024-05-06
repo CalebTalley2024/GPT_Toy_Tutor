@@ -17,8 +17,10 @@ from database_connect import client # gets MongoDB client, which gives access to
 # collection: data called from MongoDB
 # json: data in json
 def print_line(len = 150):
-    print("-" * len)
-
+    if len == 0:
+        print("\n")
+    else:
+        print("-" * len)
 
 
 # In[6]:
@@ -170,7 +172,7 @@ class Memory_Collection:
     # returns whether or not feedback was needed
     def give_feedback(self, question, info_1, info_2 = None, info_3 = None): # TODO Test
         print_line()
-        print_line()
+        print("Giving Feedback \n")
         if self.type == "Questions": # query = question
             print(f"Subtopic Info: Grade {info_1}")
             print(f"Proposed Question: {question}\n")
@@ -184,7 +186,6 @@ class Memory_Collection:
             print(f"Answer Response: {info_2}\n")
             # print(f"Time: {info_3} seconds \n")
             print(f"Proposed Evaluation: {info_3}\n")
-        print_line()
         print_line()
         # first display the answer to the user
         need_feedback = input(f"{self.type[:-1]}: above require any feedback: 'Y' for yes, 'N' for no: ") # self.type[:-1]: plural -> singular

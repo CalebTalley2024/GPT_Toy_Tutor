@@ -15,27 +15,10 @@ from database_connect import client # gets MongoDB client, which gives access to
 # prints dashed line,
 # len = # of dashes
 def print_line(len = 150):
-    print("-" * len)
-
-
-
-# In[3]:
-
-
-# can be removed
-def solve_simple_math(question):
-    code_block = question_to_code_block(question)
-    print(f"python code: {code_block}")
-    ans = code_block_to_variable(code_block)
-    # convert answer into string
-    print(f"answer: {ans}")
-    return ans
-def explain_simple_math(question):
-    ans = solve_simple_math(question)
-    # print(f" this is {str(ans)}")
-    explanation = backtrack_to_explanation(question,ans)
-    # return explanation
-    return ans
+    if len == 0:
+        print("\n")
+    else:
+        print("-" * len)
 
 
 # In[4]:
@@ -336,7 +319,6 @@ class Metric:
     # NOT USED to update overall_avg ( can only be updated in "Metrics" object
     # update: JSON
     # returns average score for metric
-    #TODO figure out rare`TypeError: 'int' object is not subscriptable` error
     def update(self, update_json):
         # update num_questions
         self.num_questions += 1
@@ -349,10 +331,17 @@ class Metric:
         except (KeyError, TypeError) as e:
             # Handle the potential errors
             print(f"Error appending score: {e}\n")
-            print_line()
-            print(update_json)
-            print_line()
-            return -1
+            print("Second Attempt: \n")
+            try: # some times update_json just gives the value,
+                # this fixed the "obj is not subscriptable error, the values match up with the evaluation, so this work around should be sufficient
+                #TODO come back to if you have error/ incorrect evaluation values or if you receive "TypeError: 'int' object is not subscriptable`" again
+                prev_scores.append(update_json)
+            except:
+                print(f"2nd Error appending score: {e}\n")
+                print_line(1000)
+                print(update_json)
+                print_line(1000)
+                return -1
 
         # remove oldest score
         if len(prev_scores) == 6:
