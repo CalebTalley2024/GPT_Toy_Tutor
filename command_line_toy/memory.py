@@ -181,11 +181,11 @@ class Memory_Collection:
             # print(f"Proposed Answer: \n{info_1}\n")
             print(f"Proposed Answer + Explanation: \n{info_2}\n")
         elif self.type == "Evaluations": # query = (GPT answer + student answer) pair
-            print(f"Question: {question}\n")
+            # print(f"Question: {question}\n")
             print(f"Answer: {info_1}\n")
             print(f"Answer Response: {info_2}\n")
             # print(f"Time: {info_3} seconds \n")
-            print(f"Proposed Evaluation: {info_3}\n")
+            print(f"Proposed Evaluation: \n{info_3}\n")
         print_line()
         # first display the answer to the user
         need_feedback = input(f"{self.type[:-1]}: above require any feedback: 'Y' for yes, 'N' for no: ") # self.type[:-1]: plural -> singular

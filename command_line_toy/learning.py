@@ -274,9 +274,9 @@ def ask_question(student_name, subtopic_obj, user_type, id_token,level):
     # here we print out the question GPT gives the student
     # make sure the question is always in lower case
     tutor_question = tutor_question.lower()
-    print(f"GPT's Question: \n{tutor_question}: \n")
+    if user_type == "user": # for trainer mode, the question has already been printed at this point ( b/c of Question making attempts)
+        print(f"GPT's Question: \n{tutor_question}: \n\n")
     # print_line()
-
     return tutor_question
 
 
@@ -305,6 +305,7 @@ def generate_proposed_question(filter_subject, filter_question, formatting, leve
     if user_type == "trainer": # recursive call for gaining feedback
         print_line()
         print(f"Proposed Question, Attempt: {num_attempts}")
+        print_line()
         given_new_feedback = question_coll.give_feedback(proposed_question, id_token)
         # print_line()
 
@@ -721,12 +722,14 @@ def receive_and_evaluate(question, student, subtopic, student_answer_explanation
         print(f"found feedback from MemPrompt: {similar_feedback_str}\n")
 
     previous_explanations = " " # string is initially empty b/c the student has not asked any clarifying questions yet
-    student_clarification(question,answer_res,student_answer_explanation,previous_explanations)
+    if user_type == "user":
+        student_clarification(question,answer_res,student_answer_explanation,previous_explanations)
     gpt_eval_res = grade_student_response(question, student_answer_explanation, student.name, solve_time, subtopic.name,answer_res,similar_feedback)
 
     if user_type == "trainer":  # recursive call for gaining feedback
         print_line()
         print(f"GPT Answer + Explanation Evaluation: Attempt {num_attempts}")
+        print_line()
         # get evaluation collection from database
 
         given_new_feedback = eval_coll.give_feedback(question,student_answer_explanation,answer_res,gpt_eval_res)
@@ -747,13 +750,13 @@ def receive_and_evaluate(question, student, subtopic, student_answer_explanation
 # all_student_subtopic_mistakes: dictionary
 # receive student's answer, respond to their answer, and update their statistics
 # returns metric updates, non_formatted GPT evaluation of student, and the solve time
-def receive_respond_and_update(question, student, subtopic):
+def receive_respond_and_update(question, student, subtopic, user_type = "user"):
     # Get the student's response and the time taken
     student_answer, solve_time = get_student_timed_response()
 
     gpt_ans_explanation, _ = get_answer_explanation_with_memory(question)
 
-    gpt_eval_res = receive_and_evaluate(question,student,subtopic, student_answer,gpt_ans_explanation, _, _,  solve_time)
+    gpt_eval_res = receive_and_evaluate(question,student,subtopic, student_answer,gpt_ans_explanation, user_type, _,  solve_time)
 
     max_eval_attempts = 10 # if GPT messes up json format, the system can try another 9 times
     for attempt in range(max_eval_attempts):
@@ -921,15 +924,16 @@ def get_answer_from_explanation(explained_ans):
 
 
 
-def get_answer_and_explanation_old(prompt):
-    # generate the explained answer
-    explanation = get_response_text(prompt)
-    answer = get_answer_from_explanation(explanation)
-    return explanation, answer
+# def get_answer_and_explanation_old(prompt): # this version does not use exec function to solve problem
+#     # generate the explained answer
+#     explanation = get_response_text(prompt)
+#     answer = get_answer_from_explanation(explanation)
+#     return explanation, answer
+
 # splits up explained answer into two parts: The answer itself and the explanation that leads to the answer
-def get_answer_and_explanation(question_w_feedback):
+def get_answer_and_explanation(question_w_feedback, user_type = "user"):
     # generate the explained answer and explanation
-    explanation, answer = solve_math(question_w_feedback)
+    explanation, answer = solve_math(question_w_feedback, user_type)
     return explanation, answer
 
 # will update the answer memory if the user spots a mistake that GPT has made in the answer and/or the explanation of the answer
@@ -960,7 +964,7 @@ def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "
     if user_type == "trainer":
         print_line()
         print(f"Generate Answer: Attempt {num_attempts} \n")
-    # print_line()
+        print_line()
     # get the answer collection from database
     ans_coll = memory.MemPrompt().answers
     # get the feedback associated with the most similar question
@@ -976,7 +980,7 @@ def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "
     # prompt = create_prompt(question,feedback_str)
     # get the GPT generated answer and explanation
     # ans_explanation: gives both the answer to the question and the explanation of the answer
-    proposed_ans_explanation, proposed_ans = get_answer_and_explanation(question_w_feedback)
+    proposed_ans_explanation, proposed_ans = get_answer_and_explanation(question_w_feedback, user_type)
 
     if user_type == "trainer": # recursive call for gaining feedback
         given_new_feedback = ans_coll.give_feedback(question,proposed_ans,proposed_ans_explanation)
@@ -995,13 +999,9 @@ def get_answer_explanation_with_memory(question, num_attempts = 0, user_type = "
 def auto_select_subtopic_opt(student):
 
     student_data_str = json.dumps(student.to_json())
-
     # weakness -->  find Topic/Subtopic Pair
-
     # Pair --> Select Lvl
-
     # Pair, Lvl --> Produce Question
-
     # student info --> weakness/ no weaknesses
     str_line = "-" * 25 # line to make distinction from data and next sentence
     detect_weakness_str = f"This is the {student.name}'s data: {student_data_str }\n\n{str_line}. THere is Subtopics data and Mistakes data. Let me know if there are any mistakes and imperfect scores in my data. \n a Perfect Score = 5, Perfect Mistakes = '' "
@@ -1051,7 +1051,6 @@ def mem_prompt_learning():
     grade, education, topic_name, subtopic_name, id_token, diff_level = get_subtopic_math_data(math_df_path)
     # get memprompt collections of memory data
     # this database has 3 collections: 'questions', 'answers', and 'evaluation'
-    # memprompt = memory.MemPrompt()
 
     # make subtopic and student objects we will use just for training
     # nothing will change in the students database collection on MongoDB
@@ -1068,7 +1067,7 @@ def mem_prompt_learning():
     # update_ans_memory(question, answer, explanation)
     # perform evaluation
 
-    gpt_eval = receive_and_evaluate(question, student_placeholder, subtopic_placeholder, answer, explanation,"trainer")
+    receive_and_evaluate(question, student_placeholder, subtopic_placeholder, answer, explanation,"trainer")
     # eval_coll = memprompt.evaluations
     # eval_coll.give_feedback(question, answer,explanation,gpt_eval)
 
@@ -1202,7 +1201,6 @@ def main():
         print_line()
         usage_type = input("Type 'user' or `1` if you use GPT to learn. \nType 'trainer' or `2` if you want to train GPT_Tutor.\nType anything else to exit the program\n")
         usage_type = usage_type.lower() # makes sure letters are in lowercase
-        print_line()
         if usage_type == "user" or usage_type == "1":
             valid = True
             # Start the learning process.
@@ -1215,11 +1213,17 @@ def main():
             valid = True
 
 
-# In[184]:
+# In[ ]:
 
 
 # Check if the script is being run directly
 if __name__ == "__main__":
     main()
+
+
+
+# In[1]:
+
+
 
 
