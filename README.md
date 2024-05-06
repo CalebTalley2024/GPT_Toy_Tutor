@@ -19,6 +19,7 @@
   - Train GPT Tutors External Databases
 
 # What's Next?
+  - **Change name, GPT Tutor is already taken**
 ### Reinforcement Learning
   - Neural UCB 
 ### Robustness Testing
