@@ -268,7 +268,6 @@ def ask_question(student_name, subtopic_obj, user_type, id_token,level):
     filter_question = init_question(student_name, subtopic_obj,level) # level is picked here
     formatting, level_meaning = question_formatting()
 
-
     tutor_question = generate_proposed_question(filter_subject, filter_question, formatting, level_meaning, user_type, id_token)
 
     # here we print out the question GPT gives the student
@@ -1150,6 +1149,7 @@ def student_learning():
         subtopic = student.get_subtopic(subtopic.id)
 
     # ask the student a question
+
     question = ask_question(student.name, subtopic, user_type,id_token,diff_level)
     # print(question)
     # receive answer,  calculate GPT answer, have a chance for the student to ask questions, evaluate student

@@ -4,15 +4,25 @@
 # In[1]:
 
 
+#
+# model = SentenceTransformer("all-MiniLM-L6-v2")
+
 from sklearn.metrics.pairwise import cosine_similarity as cos
+from sentence_transformers import SentenceTransformer
 from sentence_transformers import SentenceTransformer as ST
 import numpy as np
 from database_connect import client # gets MongoDB client, which gives access to data
 # from learning import print_line
 
+# model = ST('all-MiniLM-L6-v2') #TODO model fails(i.e segmentation fault) on Apple Silicon Mac (M1, M2, M3), fix later
+
+'''
+Error that I see:
+/opt/anaconda3/lib/python3.11/site-packages/huggingface_hub/file_download.py:1132: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+'''
 
 # In[2]:
-
 
 # collection: data called from MongoDB
 # json: data in json
@@ -202,3 +212,6 @@ class Memory_Collection:
             print("memory will not be updated")
             return False
 
+
+
+#%%
